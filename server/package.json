@@ -1,0 +1,25 @@
+{
+  "name": "edu-chatbot-server",
+  "version": "1.0.0",
+  "description": "AI-Powered Educational Chatbot",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed:subjects": "node data/seedSubjects.js",
+    "seed:knowledge": "node data/seedKnowledge.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "natural": "^8.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
