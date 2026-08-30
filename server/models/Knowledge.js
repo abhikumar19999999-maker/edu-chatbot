@@ -50,6 +50,11 @@ const knowledgeSchema = new mongoose.Schema(
       default: "EduBot Knowledge Base"
     },
 
+    embedding: {
+      type: [Number],
+      default: []
+    },
+
     isActive: {
       type: Boolean,
       default: true
@@ -60,6 +65,9 @@ const knowledgeSchema = new mongoose.Schema(
   }
 );
 
-const Knowledge = mongoose.model("Knowledge", knowledgeSchema);
+const Knowledge = mongoose.model(
+  "Knowledge",
+  knowledgeSchema
+);
 
 export default Knowledge;

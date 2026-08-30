@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Dashboard - EduBot</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+
+  <div class="dashboard-app">
+
+    <!-- ================================= -->
+    <!-- NAVBAR -->
+    <!-- ================================= -->
+
+    <header class="dashboard-navbar">
+
+      <div class="logo">
+        Edu<span>Bot</span>
+      </div>
+
+      <nav class="dashboard-nav">
+
+        <a href="/chat.html">
+          Chat
+        </a>
+
+        <a
+          href="/dashboard.html"
+          class="active"
+        >
+          Dashboard
+        </a>
+
+        <button id="logoutBtn">
+          Logout
+        </button>
+
+      </nav>
+
+    </header>
+
+
+    <!-- ================================= -->
+    <!-- CONTENT -->
+    <!-- ================================= -->
+
+    <main class="dashboard-container">
+
+      <section class="dashboard-heading">
+
+        <div>
+
+          <p class="eyebrow">
+            Student Dashboard
+          </p>
+
+          <h1>
+            Welcome back,
+            <span id="studentName">
+              Student
+            </span>
+          </h1>
+
+          <p>
+            Track your EduBot learning activity
+            and conversation progress.
+          </p>
+
+        </div>
+
+        <a
+          href="/chat.html"
+          class="start-chat-btn"
+        >
+          Start Learning →
+        </a>
+
+      </section>
+
+
+      <!-- ================================= -->
+      <!-- STAT CARDS -->
+      <!-- ================================= -->
+
+      <section class="stats-grid">
+
+        <div class="stat-card">
+
+          <div class="stat-icon">
+            💬
+          </div>
+
+          <div>
+            <p>Total Conversations</p>
+
+            <h2 id="totalConversations">
+              0
+            </h2>
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-icon">
+            ❓
+          </div>
+
+          <div>
+            <p>Questions Asked</p>
+
+            <h2 id="questionsAsked">
+              0
+            </h2>
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-icon">
+            🤖
+          </div>
+
+          <div>
+            <p>Bot Responses</p>
+
+            <h2 id="botResponses">
+              0
+            </h2>
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-icon">
+            ⭐
+          </div>
+
+          <div>
+            <p>Average Rating</p>
+
+            <h2 id="averageRating">
+              0.00
+            </h2>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================================= -->
+      <!-- MAIN GRID -->
+      <!-- ================================= -->
+
+      <section class="dashboard-grid">
+
+
+        <!-- SUBJECTS -->
+
+        <div class="dashboard-card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Subjects Studied
+              </h2>
+
+              <p>
+                Subjects from your conversations
+              </p>
+
+            </div>
+
+            <span
+              id="subjectsCount"
+              class="count-badge"
+            >
+              0
+            </span>
+
+          </div>
+
+
+          <div
+            id="subjectsList"
+            class="subjects-list"
+          >
+
+            <div class="empty-state">
+              No subjects studied yet.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- FEEDBACK -->
+
+        <div class="dashboard-card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Feedback
+              </h2>
+
+              <p>
+                Your answer-quality ratings
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="feedback-summary">
+
+            <div class="rating-display">
+
+              <strong id="ratingValue">
+                0.00
+              </strong>
+
+              <span>
+                / 5
+              </span>
+
+            </div>
+
+            <p>
+              Average answer rating
+            </p>
+
+          </div>
+
+
+          <div class="feedback-stats">
+
+            <div>
+              <span>
+                Helpful answers
+              </span>
+
+              <strong id="helpfulAnswers">
+                0
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Total feedback
+              </span>
+
+              <strong id="totalFeedback">
+                0
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- RECENT CONVERSATIONS -->
+
+        <div
+          class="dashboard-card recent-card"
+        >
+
+          <div class="card-header">
+
+            <div>
+
+              <h2>
+                Recent Conversations
+              </h2>
+
+              <p>
+                Continue where you left off
+              </p>
+
+            </div>
+
+            <a href="/chat.html">
+              View Chat
+            </a>
+
+          </div>
+
+
+          <div
+            id="recentConversations"
+            class="recent-conversations"
+          >
+
+            <div class="empty-state">
+              No conversations yet.
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: edubot
+    runtime: node
+    plan: free
+
+    buildCommand: npm --prefix server install
+
+    startCommand: npm --prefix server start
+
+    healthCheckPath: /api/health
+
+    autoDeployTrigger: commit
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: MONGODB_URI
+        sync: false
+
+      - key: JWT_SECRET
+        sync: false
+
+      - key: OPENAI_API_KEY
+        sync: false
+
+      - key: OPENAI_MODEL
+        sync: false
+
+      - key: CLIENT_URL
+        sync: false

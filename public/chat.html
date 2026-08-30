@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>EduBot - Chat</title>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/chat.css">
+</head>
+
+<body>
+
+  <div class="chat-app">
+
+    <!-- ========================= -->
+    <!-- SIDEBAR -->
+    <!-- ========================= -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-header">
+
+        <div class="logo">
+          Edu<span>Bot</span>
+        </div>
+
+        <button
+          id="newChatBtn"
+          class="new-chat-btn"
+        >
+          + New Chat
+        </button>
+        <a
+           href="/dashboard.html"
+           class="dashboard-link"
+         >
+           📊 Dashboard
+        </a>
+
+      </div>
+
+
+      <!-- Subject -->
+
+      <div class="subject-section">
+
+        <label for="subjectSelect">
+          Select Subject
+        </label>
+
+        <select id="subjectSelect">
+
+          <option value="">
+            All Subjects
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Conversations -->
+
+      <div class="history-section">
+
+        <div class="section-title">
+          Recent Conversations
+        </div>
+
+        <div
+          id="conversationList"
+          class="conversation-list"
+        >
+          <p class="empty-history">
+            No conversations yet
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- User -->
+
+      <div class="sidebar-footer">
+
+        <div class="user-info">
+
+          <div class="avatar" id="userAvatar">
+            U
+          </div>
+
+          <div>
+
+            <strong id="userName">
+              Student
+            </strong>
+
+            <small id="userEmail">
+              student@example.com
+            </small>
+
+          </div>
+
+        </div>
+
+        <button
+          id="logoutBtn"
+          class="logout-btn"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <!-- ========================= -->
+    <!-- MAIN CHAT -->
+    <!-- ========================= -->
+
+    <main class="chat-main">
+
+      <!-- Header -->
+
+      <header class="chat-header">
+
+        <div>
+
+          <h1>EduBot</h1>
+
+          <p>
+            AI-powered educational assistant
+          </p>
+
+        </div>
+
+        <div
+          class="connection-status"
+          id="connectionStatus"
+        >
+          ● Online
+        </div>
+
+      </header>
+
+
+      <!-- Messages -->
+
+      <section
+        id="chatMessages"
+        class="chat-messages"
+      >
+
+        <div class="welcome-message">
+
+          <div class="welcome-icon">
+            🤖
+          </div>
+
+          <h2>
+            Welcome to EduBot
+          </h2>
+
+          <p>
+            Ask me an academic question and
+            I'll help you understand it.
+          </p>
+
+          <div class="suggestions">
+
+            <button
+              data-question="What is supervised learning?"
+            >
+              What is supervised learning?
+            </button>
+
+            <button
+              data-question="What is normalization in DBMS?"
+            >
+              Explain DBMS normalization
+            </button>
+
+            <button
+              data-question="What is a process in operating system?"
+            >
+              What is a process?
+            </button>
+
+            <button
+              data-question="What is TCP?"
+            >
+              Explain TCP
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- Typing indicator -->
+
+      <div
+        id="typingIndicator"
+        class="typing-indicator hidden"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+
+        <small>EduBot is thinking...</small>
+      </div>
+
+
+      <!-- Input -->
+
+      <form
+        id="chatForm"
+        class="chat-input-area"
+      >
+
+        <textarea
+          id="messageInput"
+          rows="1"
+          placeholder="Ask an academic question..."
+          maxlength="2000"
+          required
+        ></textarea>
+
+        <button
+          id="sendBtn"
+          type="submit"
+          aria-label="Send message"
+        >
+          ➤
+        </button>
+
+      </form>
+
+      <p class="chat-disclaimer">
+        EduBot uses its academic knowledge base and AI
+        to provide educational assistance.
+      </p>
+
+    </main>
+
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/chat.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Admin Panel - EduBot</title>
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/css/admin.css"
+  >
+</head>
+
+<body>
+
+  <div class="admin-app">
+
+    <header class="admin-navbar">
+
+      <div class="logo">
+        Edu<span>Bot</span>
+      </div>
+
+      <nav>
+
+        <a href="/dashboard.html">
+          Student Dashboard
+        </a>
+
+        <a href="/chat.html">
+          Chat
+        </a>
+
+        <button id="logoutBtn">
+          Logout
+        </button>
+
+      </nav>
+
+    </header>
+
+
+    <main class="admin-container">
+
+      <section class="admin-heading">
+
+        <div>
+
+          <p class="eyebrow">
+            Administration
+          </p>
+
+          <h1>
+            EduBot Control Center
+          </h1>
+
+          <p>
+            Manage users, subjects,
+            knowledge and feedback.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- ============================= -->
+      <!-- STATS -->
+      <!-- ============================= -->
+
+      <section class="admin-stats">
+
+        <div class="admin-stat">
+          <span>👥</span>
+
+          <div>
+            <small>Users</small>
+            <strong id="totalUsers">0</strong>
+          </div>
+        </div>
+
+        <div class="admin-stat">
+          <span>📚</span>
+
+          <div>
+            <small>Subjects</small>
+            <strong id="totalSubjects">0</strong>
+          </div>
+        </div>
+
+        <div class="admin-stat">
+          <span>🧠</span>
+
+          <div>
+            <small>Knowledge</small>
+            <strong id="totalKnowledge">0</strong>
+          </div>
+        </div>
+
+        <div class="admin-stat">
+          <span>💬</span>
+
+          <div>
+            <small>Conversations</small>
+            <strong id="totalConversations">0</strong>
+          </div>
+        </div>
+
+        <div class="admin-stat">
+          <span>⭐</span>
+
+          <div>
+            <small>Avg. Rating</small>
+            <strong id="averageRating">0</strong>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ============================= -->
+      <!-- MANAGEMENT -->
+      <!-- ============================= -->
+
+      <section class="admin-grid">
+
+  <!-- =============================== -->
+  <!-- USERS -->
+  <!-- =============================== -->
+
+  <div class="admin-card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Users</h2>
+        <p>Registered EduBot users</p>
+      </div>
+
+    </div>
+
+    <div id="usersList">
+      Loading...
+    </div>
+
+  </div>
+
+
+  <!-- =============================== -->
+  <!-- FEEDBACK -->
+  <!-- =============================== -->
+
+  <div class="admin-card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Recent Feedback</h2>
+        <p>Student response ratings</p>
+      </div>
+
+    </div>
+
+    <div id="feedbackList">
+      Loading...
+    </div>
+
+  </div>
+
+
+  <!-- =============================== -->
+  <!-- SUBJECT MANAGEMENT -->
+  <!-- =============================== -->
+
+  <div class="admin-card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Subjects</h2>
+        <p>Create and manage academic subjects</p>
+      </div>
+
+    </div>
+
+    <form id="subjectForm" class="admin-form">
+
+      <input
+        type="hidden"
+        id="subjectId"
+      >
+
+      <input
+        type="text"
+        id="subjectName"
+        placeholder="Subject name"
+        required
+      >
+
+      <textarea
+        id="subjectDescription"
+        placeholder="Subject description"
+        rows="3"
+        required
+      ></textarea>
+
+      <input
+        type="text"
+        id="subjectIcon"
+        placeholder="Icon e.g. 📚"
+        maxlength="10"
+      >
+
+      <div class="form-actions">
+
+        <button
+          type="submit"
+          class="primary-admin-btn"
+          id="subjectSubmitBtn"
+        >
+          Add Subject
+        </button>
+
+        <button
+          type="button"
+          class="secondary-admin-btn hidden"
+          id="cancelSubjectBtn"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+      <p id="subjectMessage"></p>
+
+    </form>
+
+
+    <div
+      id="adminSubjectsList"
+      class="management-list"
+    >
+      Loading...
+    </div>
+
+  </div>
+
+
+  <!-- =============================== -->
+  <!-- KNOWLEDGE MANAGEMENT -->
+  <!-- =============================== -->
+
+  <div class="admin-card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Knowledge Base</h2>
+        <p>Add and manage academic content</p>
+      </div>
+
+    </div>
+
+
+    <form
+      id="knowledgeForm"
+      class="admin-form"
+    >
+
+      <input
+        type="hidden"
+        id="knowledgeId"
+      >
+
+
+      <select
+        id="knowledgeSubject"
+        required
+      >
+        <option value="">
+          Select subject
+        </option>
+      </select>
+
+
+      <input
+        type="text"
+        id="knowledgeTitle"
+        placeholder="Knowledge title"
+        required
+      >
+
+
+      <input
+        type="text"
+        id="knowledgeQuestion"
+        placeholder="Question"
+        required
+      >
+
+
+      <textarea
+        id="knowledgeAnswer"
+        placeholder="Answer"
+        rows="5"
+        required
+      ></textarea>
+
+
+      <input
+        type="text"
+        id="knowledgeKeywords"
+        placeholder="Keywords separated by commas"
+      >
+
+
+      <input
+        type="text"
+        id="knowledgeTopic"
+        placeholder="Topic"
+      >
+
+
+      <select id="knowledgeDifficulty">
+
+        <option value="beginner">
+          Beginner
+        </option>
+
+        <option value="intermediate">
+          Intermediate
+        </option>
+
+        <option value="advanced">
+          Advanced
+        </option>
+
+      </select>
+
+
+      <input
+        type="text"
+        id="knowledgeSource"
+        placeholder="Source"
+        value="EduBot Knowledge Base"
+      >
+
+
+      <div class="form-actions">
+
+        <button
+          type="submit"
+          class="primary-admin-btn"
+          id="knowledgeSubmitBtn"
+        >
+          Add Knowledge
+        </button>
+
+        <button
+          type="button"
+          class="secondary-admin-btn hidden"
+          id="cancelKnowledgeBtn"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+
+      <p id="knowledgeMessage"></p>
+
+    </form>
+
+  </div>
+
+
+  <!-- =============================== -->
+  <!-- FULL KNOWLEDGE TABLE -->
+  <!-- =============================== -->
+
+  <div class="admin-card full-width">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Knowledge Records</h2>
+        <p>Manage educational chatbot content</p>
+      </div>
+
+    </div>
+
+    <div
+      id="knowledgeManagementList"
+      class="management-list"
+    >
+      Loading...
+    </div>
+
+  </div>
+
+</section>
+
+    </main>
+
+  </div>
+
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
+
+</body>
+
+</html>
