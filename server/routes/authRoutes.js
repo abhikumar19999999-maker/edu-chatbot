@@ -2,7 +2,8 @@ import express from "express";
 
 import {
   registerUser,
-  loginUser
+  loginUser,
+  logoutUser
 } from "../controllers/authController.js";
 
 import { validateBody } from "../middleware/validationMiddleware.js";
@@ -11,7 +12,6 @@ import { authLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
 
-// Authentication endpoints are rate-limited and validated exactly once.
 router.post(
   "/register",
   authLimiter,
@@ -25,5 +25,7 @@ router.post(
   validateBody(loginSchema),
   loginUser
 );
+
+router.post("/logout", logoutUser);
 
 export default router;
