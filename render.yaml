@@ -23,4 +23,4 @@ services:
         sync: false
 
       - key: CLIENT_URL
-        sync: false
+        value: https://edu-chatbot-8zft.onrender.com
