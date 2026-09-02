@@ -2,9 +2,12 @@ const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 
 const saveUserSession = (user) => {
-  // Only non-sensitive display information is kept client-side.
-  // Authentication is handled by the HttpOnly session cookie.
+  // Authentication is handled by the HttpOnly edubot_session cookie.
+  // This localStorage entry contains display data only.
   localStorage.setItem("edubot_user", JSON.stringify(user));
+
+  // Legacy protected pages use this as a non-secret session marker.
+  localStorage.setItem("edubot_token", "cookie-session");
 };
 
 if (registerForm) {
