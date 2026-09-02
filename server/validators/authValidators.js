@@ -11,11 +11,12 @@ export const registerSchema = z.object({
     .string()
     .trim()
     .email("Enter a valid email address")
+    .max(254, "Email is too long")
     .transform((value) => value.toLowerCase()),
 
   password: z
     .string()
-    .min(6, "Password must contain at least 6 characters")
+    .min(8, "Password must contain at least 8 characters")
     .max(100, "Password is too long")
 });
 
@@ -24,9 +25,11 @@ export const loginSchema = z.object({
     .string()
     .trim()
     .email("Enter a valid email address")
+    .max(254, "Email is too long")
     .transform((value) => value.toLowerCase()),
 
   password: z
     .string()
     .min(1, "Password is required")
+    .max(100, "Password is too long")
 });
