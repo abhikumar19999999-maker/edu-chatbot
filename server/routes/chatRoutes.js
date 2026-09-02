@@ -7,25 +7,19 @@ import {
 } from "../controllers/chatController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
-
-import {
-  validateBody
-} from "../middleware/validationMiddleware.js";
-
-import {
-  chatSchema
-} from "../validators/chatValidators.js";
-
-import {
-  chatLimiter
-} from "../middleware/rateLimitMiddleware.js";
+import { validateBody } from "../middleware/validationMiddleware.js";
+import { chatSchema } from "../validators/chatValidators.js";
+import { chatLimiter } from "../middleware/rateLimitMiddleware.js";
 
 const router = express.Router();
 
+// Every chat operation requires an authenticated user.
 router.use(authMiddleware);
 
+// The chat endpoint is defined once so the limiter cannot be bypassed.
 router.post(
   "/",
+  chatLimiter,
   validateBody(chatSchema),
   sendMessage
 );
@@ -38,13 +32,6 @@ router.get(
 router.get(
   "/:id",
   getConversation
-);
-
-router.post(
-  "/",
-  chatLimiter,
-  validateBody(chatSchema),
-  sendMessage
 );
 
 export default router;
