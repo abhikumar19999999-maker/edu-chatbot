@@ -9,10 +9,6 @@ import {
   detectIntent
 } from "./intentService.js";
 
-import {
-  generateAIResponse
-} from "./aiService.js";
-
 export const processChatMessage = async ({
   userId,
   conversationId,
@@ -68,41 +64,7 @@ export const processChatMessage = async ({
   });
 
   // ==========================================
-  // 6. Get previous messages
-  // ==========================================
-  const previousMessages = await Message.find({
-    conversation: conversation._id
-  })
-    .sort({ createdAt: -1 })
-    .limit(6)
-    .lean();
-
-  previousMessages.reverse();
-
-  // ==========================================
-  // 7. Build academic context
-  // ==========================================
-  const context = results.length
-    ? results
-        .map((result, index) => {
-          const item = result.item;
-
-          return `
-SOURCE ${index + 1}
-Title: ${item.title}
-Topic: ${item.topic || "General"}
-Subject: ${item.subject?.name || "Academic"}
-Content:
-${item.answer}
-Similarity Score:
-${result.score.toFixed(4)}
-          `;
-        })
-        .join("\n")
-    : "No relevant academic content was found.";
-
-  // ==========================================
-  // 8. Determine matched source
+  // 6. Determine matched source
   // ==========================================
   const bestMatch =
     results.length > 0
@@ -111,7 +73,7 @@ ${result.score.toFixed(4)}
 
   const retrievalScore =
     results.length > 0
-      ? results[0].score
+      ? Number(results[0].score || 0)
       : 0;
 
   let detectedSubject =
@@ -122,33 +84,14 @@ ${result.score.toFixed(4)}
   }
 
   // ==========================================
-  // 9. Generate AI response
+  // 7. Generate knowledge-base response
   // ==========================================
-  let answer;
-
-  try {
-    answer = await generateAIResponse({
-      question: cleanMessage,
-      context,
-      history: previousMessages
-    });
-  } catch (error) {
-    console.error(
-      "AI response generation failed:",
-      error.message
-    );
-
-    // Safe fallback
-    if (bestMatch) {
-      answer = bestMatch.answer;
-    } else {
-      answer =
-        "I couldn't find enough information in my educational knowledge base to answer that accurately. Please try rephrasing your question.";
-    }
-  }
+  const answer = bestMatch
+    ? bestMatch.answer
+    : "I couldn't find enough information in my educational knowledge base to answer that accurately. Please try rephrasing your question or selecting a relevant subject.";
 
   // ==========================================
-  // 10. Save user message
+  // 8. Save user message
   // ==========================================
   const userMessage = await Message.create({
     conversation: conversation._id,
@@ -159,7 +102,7 @@ ${result.score.toFixed(4)}
   });
 
   // ==========================================
-  // 11. Save bot message
+  // 9. Save bot message
   // ==========================================
   const botMessage = await Message.create({
     conversation: conversation._id,
@@ -172,7 +115,7 @@ ${result.score.toFixed(4)}
   });
 
   // ==========================================
-  // 12. Update conversation
+  // 10. Update conversation
   // ==========================================
   conversation.subject =
     detectedSubject || conversation.subject;
@@ -182,7 +125,7 @@ ${result.score.toFixed(4)}
   await conversation.save();
 
   // ==========================================
-  // 13. Return result
+  // 11. Return result
   // ==========================================
   return {
     conversation,
