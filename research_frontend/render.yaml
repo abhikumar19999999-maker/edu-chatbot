@@ -2,6 +2,7 @@ services:
   - type: web
     name: edubot-research-frontend
     runtime: static
+    rootDir: research_frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     autoDeployTrigger: commit
