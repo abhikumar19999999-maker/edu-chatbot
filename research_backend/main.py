@@ -14,13 +14,20 @@ from transformers import pipeline
 
 load_dotenv()
 
+
+def env_value(name: str, default: str) -> str:
+    """Read a single clean environment value, tolerating accidental pasted newlines."""
+    value = os.getenv(name, default)
+    return value.strip().splitlines()[0].strip() if value else default
+
+
 MONGO_URI = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
-DB_NAME = os.getenv("MONGODB_DB", "edubot")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-GENERATION_MODEL = os.getenv("GENERATION_MODEL", "google/flan-t5-small")
-TOP_K = max(1, min(int(os.getenv("TOP_K", "5")), 10))
-MIN_SCORE = float(os.getenv("MIN_RETRIEVAL_SCORE", "0.25"))
-FRONTEND_URL = os.getenv("FRONTEND_URL", "*")
+DB_NAME = env_value("MONGODB_DB", "edubot")
+EMBEDDING_MODEL = env_value("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+GENERATION_MODEL = env_value("GENERATION_MODEL", "google/flan-t5-small")
+TOP_K = max(1, min(int(env_value("TOP_K", "5")), 10))
+MIN_SCORE = float(env_value("MIN_RETRIEVAL_SCORE", "0.25"))
+FRONTEND_URL = env_value("FRONTEND_URL", "*")
 
 embedding_model = None
 generator = None
@@ -139,8 +146,8 @@ def generate_answer(query: str, contexts: list[dict]) -> str:
 async def lifespan(app: FastAPI):
     global embedding_model, generator
     try:
-        embedding_model = SentenceTransformer(EMBEDDING_MODEL)
-        generator = pipeline("text2text-generation", model=GENERATION_MODEL)
+        embedding_model = SentenceTransformer(EMBEDDING_MODEL, device="cpu")
+        generator = pipeline("text2text-generation", model=GENERATION_MODEL, device=-1)
         if client is not None:
             client.admin.command("ping")
             load_knowledge()
