@@ -10,13 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline
 
 load_dotenv()
 
 
 def env_value(name: str, default: str) -> str:
-    """Read a single clean environment value, tolerating accidental pasted newlines."""
     value = os.getenv(name, default)
     return value.strip().splitlines()[0].strip() if value else default
 
@@ -25,9 +23,10 @@ MONGO_URI = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
 DB_NAME = env_value("MONGODB_DB", "edubot")
 EMBEDDING_MODEL = env_value("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 GENERATION_MODEL = env_value("GENERATION_MODEL", "google/flan-t5-small")
-TOP_K = max(1, min(int(env_value("TOP_K", "5")), 10))
+TOP_K = max(1, min(int(env_value("TOP_K", "3")), 5))
 MIN_SCORE = float(env_value("MIN_RETRIEVAL_SCORE", "0.25"))
 FRONTEND_URL = env_value("FRONTEND_URL", "*")
+ENABLE_LOCAL_GENERATION = env_value("ENABLE_LOCAL_GENERATION", "false").lower() == "true"
 
 embedding_model = None
 generator = None
@@ -85,7 +84,11 @@ def load_knowledge():
         return
 
     vectors = embedding_model.encode(
-        texts, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False
+        texts,
+        normalize_embeddings=True,
+        convert_to_numpy=True,
+        show_progress_bar=False,
+        batch_size=8,
     ).astype("float32")
     index = faiss.IndexFlatIP(vectors.shape[1])
     index.add(vectors)
@@ -125,9 +128,24 @@ def retrieve(query: str, subject: Optional[str] = None):
     return results
 
 
-def generate_answer(query: str, contexts: list[dict]) -> str:
+def extractive_answer(query: str, contexts: list[dict]) -> str:
+    """Memory-safe RAG fallback that answers from the retrieved knowledge only."""
     if not contexts:
         return "I could not find sufficiently relevant syllabus-aligned material. Please rephrase the question or add the required material to the knowledge base."
+
+    best = contexts[0]["answer"].strip()
+    if not best:
+        return "The retrieved material did not contain enough information to answer confidently."
+
+    return f"Based on the retrieved academic material: {best}"
+
+
+def generate_answer(query: str, contexts: list[dict]) -> str:
+    if not contexts:
+        return extractive_answer(query, contexts)
+
+    if generator is None:
+        return extractive_answer(query, contexts)
 
     context = "\n\n".join(
         f"Source {i + 1}: {c['title']}\n{c['answer']}" for i, c in enumerate(contexts)
@@ -138,19 +156,29 @@ def generate_answer(query: str, contexts: list[dict]) -> str:
         "Keep the explanation clear and concise.\n\n"
         f"Academic context:\n{context}\n\nStudent question: {query}\nAnswer:"
     )
-    result = generator(prompt, max_new_tokens=160, do_sample=False)[0]["generated_text"].strip()
-    return result or "The retrieved material did not contain enough information to answer confidently."
+    result = generator(prompt, max_new_tokens=120, do_sample=False)[0]["generated_text"].strip()
+    return result or extractive_answer(query, contexts)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global embedding_model, generator
     try:
+        print(f"Loading embedding model: {EMBEDDING_MODEL}")
         embedding_model = SentenceTransformer(EMBEDDING_MODEL, device="cpu")
-        generator = pipeline("text2text-generation", model=GENERATION_MODEL, device=-1)
+
+        if ENABLE_LOCAL_GENERATION:
+            # Optional only: FLAN-T5 is disabled by default on small Render instances.
+            from transformers import pipeline
+            print(f"Loading local generation model: {GENERATION_MODEL}")
+            generator = pipeline("text2text-generation", model=GENERATION_MODEL, device=-1)
+        else:
+            print("Local generation disabled; using memory-safe extractive RAG answers.")
+
         if client is not None:
             client.admin.command("ping")
             load_knowledge()
+            print(f"Loaded {len(knowledge)} knowledge records into FAISS.")
     except Exception as exc:
         print(f"Startup warning: {exc}")
     yield
@@ -161,7 +189,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="EduBot Research API",
     version="1.0.0",
-    description="Simple research-paper-aligned RAG API using FastAPI, FAISS and Hugging Face.",
+    description="Research-paper-aligned RAG API using FastAPI, FAISS, Sentence Transformers and optional Hugging Face generation.",
     lifespan=lifespan,
 )
 
@@ -191,22 +219,29 @@ def health():
         "database": database,
         "vector_store": "FAISS",
         "embedding_model": EMBEDDING_MODEL,
-        "generation_model": GENERATION_MODEL,
+        "generation_model": GENERATION_MODEL if ENABLE_LOCAL_GENERATION else "disabled (memory-safe RAG)",
         "knowledge_records": len(knowledge),
-        "models_ready": embedding_model is not None and generator is not None,
+        "models_ready": embedding_model is not None,
+        "local_generation": ENABLE_LOCAL_GENERATION,
     }
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    if embedding_model is None or generator is None:
-        raise HTTPException(status_code=503, detail="AI models are still loading. Please try again shortly.")
+    if embedding_model is None:
+        raise HTTPException(status_code=503, detail="Embedding model is still loading. Please try again shortly.")
     started = time.perf_counter()
     query = request.message.strip()
     contexts = retrieve(query, request.subject)
     answer = generate_answer(query, contexts)
     latency_ms = round((time.perf_counter() - started) * 1000, 2)
-    return ChatResponse(answer=answer, sources=contexts, retrieval_count=len(contexts), latency_ms=latency_ms, grounded=bool(contexts))
+    return ChatResponse(
+        answer=answer,
+        sources=contexts,
+        retrieval_count=len(contexts),
+        latency_ms=latency_ms,
+        grounded=bool(contexts),
+    )
 
 
 @app.post("/reload")
