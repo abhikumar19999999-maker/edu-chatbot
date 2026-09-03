@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 from contextlib import asynccontextmanager
@@ -35,6 +36,9 @@ generator = None
 index = None
 knowledge = []
 subject_names = {}
+initialization_task = None
+initialization_status = "starting"
+initialization_error = None
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=8000) if MONGO_URI else None
 
 
@@ -119,20 +123,19 @@ def load_knowledge():
         show_progress_bar=False,
         batch_size=8,
     ).astype("float32")
-    index = faiss.IndexFlatIP(vectors.shape[1])
-    index.add(vectors)
+    new_index = faiss.IndexFlatIP(vectors.shape[1])
+    new_index.add(vectors)
+    index = new_index
 
 
 def retrieve(query: str, subject: Optional[str] = None):
-    if index is None or not knowledge:
+    if index is None or not knowledge or embedding_model is None:
         return []
 
     vector = embedding_model.encode(
         [query], normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False
     ).astype("float32")
 
-    # Search a larger pool before applying the subject filter. This prevents
-    # relevant subject-specific records from being lost when TOP_K is small.
     candidate_k = min(max(TOP_K * 10, 20), len(knowledge))
     scores, ids = index.search(vector, candidate_k)
     requested_subject = normalize(subject)
@@ -159,7 +162,6 @@ def retrieve(query: str, subject: Optional[str] = None):
 
 
 def extractive_answer(query: str, contexts: list[dict]) -> str:
-    """Memory-safe RAG fallback that answers from the retrieved knowledge only."""
     if not contexts:
         return "I could not find sufficiently relevant syllabus-aligned material. Please rephrase the question or add the required material to the knowledge base."
 
@@ -190,32 +192,58 @@ def generate_answer(query: str, contexts: list[dict]) -> str:
     return result or extractive_answer(query, contexts)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global embedding_model, generator
+async def initialize_backend():
+    global embedding_model, generator, initialization_status, initialization_error
     try:
-        print(f"Loading embedding model: {EMBEDDING_MODEL}")
-        embedding_model = SentenceTransformer(EMBEDDING_MODEL, device="cpu")
+        initialization_status = "loading_embedding_model"
+        print(f"Loading embedding model in background: {EMBEDDING_MODEL}")
+        embedding_model = await asyncio.to_thread(
+            SentenceTransformer, EMBEDDING_MODEL, device="cpu"
+        )
 
         if ENABLE_LOCAL_GENERATION:
             from transformers import pipeline
+            initialization_status = "loading_generation_model"
             print(f"Loading local generation model: {GENERATION_MODEL}")
-            generator = pipeline("text2text-generation", model=GENERATION_MODEL, device=-1)
+            generator = await asyncio.to_thread(
+                pipeline, "text2text-generation", model=GENERATION_MODEL, device=-1
+            )
         else:
             print("Local generation disabled; using memory-safe extractive RAG answers.")
 
         if client is not None:
-            client.admin.command("ping")
-            load_subjects()
-            load_knowledge()
+            initialization_status = "loading_knowledge"
+            await asyncio.to_thread(client.admin.command, "ping")
+            await asyncio.to_thread(load_subjects)
+            await asyncio.to_thread(load_knowledge)
             print(
                 f"Loaded {len(knowledge)} knowledge records into FAISS "
                 f"from '{DB_NAME}.{KNOWLEDGE_COLLECTION}'. "
                 f"Loaded {len(subject_names)} subject mappings."
             )
+
+        initialization_status = "ready"
+        initialization_error = None
+        print("EduBot research backend initialization complete.")
     except Exception as exc:
-        print(f"Startup warning: {exc}")
+        initialization_status = "error"
+        initialization_error = str(exc)
+        print(f"Background initialization warning: {exc}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global initialization_task
+    # Do not block Uvicorn startup while downloading/loading ML models or
+    # generating the FAISS index. Render can bind the port immediately.
+    initialization_task = asyncio.create_task(initialize_backend())
     yield
+    if initialization_task and not initialization_task.done():
+        initialization_task.cancel()
+        try:
+            await initialization_task
+        except asyncio.CancelledError:
+            pass
     if client is not None:
         client.close()
 
@@ -235,7 +263,12 @@ else:
 
 @app.get("/")
 def root():
-    return {"success": True, "service": "EduBot Research API", "docs": "/docs"}
+    return {
+        "success": True,
+        "service": "EduBot Research API",
+        "docs": "/docs",
+        "status": initialization_status,
+    }
 
 
 @app.get("/health")
@@ -259,13 +292,18 @@ def health():
         "subject_mappings": len(subject_names),
         "models_ready": embedding_model is not None,
         "local_generation": ENABLE_LOCAL_GENERATION,
+        "initialization_status": initialization_status,
+        "initialization_error": initialization_error,
     }
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     if embedding_model is None:
-        raise HTTPException(status_code=503, detail="Embedding model is still loading. Please try again shortly.")
+        raise HTTPException(
+            status_code=503,
+            detail=f"EduBot AI models are still initializing (status: {initialization_status}). Please try again shortly.",
+        )
     started = time.perf_counter()
     query = request.message.strip()
     contexts = retrieve(query, request.subject)
