@@ -21,6 +21,8 @@ def env_value(name: str, default: str) -> str:
 
 MONGO_URI = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
 DB_NAME = env_value("MONGODB_DB", "edubot")
+KNOWLEDGE_COLLECTION = env_value("MONGODB_KNOWLEDGE_COLLECTION", "knowledges")
+SUBJECT_COLLECTION = env_value("MONGODB_SUBJECT_COLLECTION", "subjects")
 EMBEDDING_MODEL = env_value("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 GENERATION_MODEL = env_value("GENERATION_MODEL", "google/flan-t5-small")
 TOP_K = max(1, min(int(env_value("TOP_K", "3")), 5))
@@ -32,6 +34,7 @@ embedding_model = None
 generator = None
 index = None
 knowledge = []
+subject_names = {}
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=8000) if MONGO_URI else None
 
 
@@ -55,6 +58,10 @@ class ChatResponse(BaseModel):
     grounded: bool
 
 
+def normalize(value) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
 def knowledge_text(item):
     values = []
     for key in ("title", "question", "answer", "topic", "keywords"):
@@ -66,13 +73,35 @@ def knowledge_text(item):
     return " ".join(values).strip()
 
 
+def load_subjects():
+    global subject_names
+    subject_names = {}
+    if client is None:
+        return
+
+    collection = client[DB_NAME][SUBJECT_COLLECTION]
+    for item in collection.find({"isActive": {"$ne": False}}, {"name": 1}):
+        name = str(item.get("name", "")).strip()
+        if name:
+            subject_names[str(item.get("_id"))] = name
+            subject_names[normalize(name)] = name
+
+
+def item_subject_name(item) -> str:
+    value = item.get("subject", "")
+    if isinstance(value, dict):
+        value = value.get("name", "")
+    key = str(value)
+    return subject_names.get(key, key)
+
+
 def load_knowledge():
     global index, knowledge
     if client is None:
         knowledge, index = [], None
         return
 
-    collection = client[DB_NAME]["knowledge"]
+    collection = client[DB_NAME][KNOWLEDGE_COLLECTION]
     knowledge = list(collection.find({"isActive": {"$ne": False}}))
     texts = [knowledge_text(item) for item in knowledge]
     valid = [(item, text) for item, text in zip(knowledge, texts) if text]
@@ -101,18 +130,19 @@ def retrieve(query: str, subject: Optional[str] = None):
     vector = embedding_model.encode(
         [query], normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False
     ).astype("float32")
-    candidate_k = min(max(TOP_K * 3, TOP_K), len(knowledge))
+
+    # Search a larger pool before applying the subject filter. This prevents
+    # relevant subject-specific records from being lost when TOP_K is small.
+    candidate_k = min(max(TOP_K * 10, 20), len(knowledge))
     scores, ids = index.search(vector, candidate_k)
+    requested_subject = normalize(subject)
 
     results = []
     for score, idx in zip(scores[0], ids[0]):
         if idx < 0:
             continue
         item = knowledge[int(idx)]
-        item_subject = item.get("subject", "")
-        if isinstance(item_subject, dict):
-            item_subject = item_subject.get("name", "")
-        if subject and str(item_subject).lower() != subject.lower():
+        if requested_subject and normalize(item_subject_name(item)) != requested_subject:
             continue
         score = float(score)
         if score < MIN_SCORE:
@@ -168,7 +198,6 @@ async def lifespan(app: FastAPI):
         embedding_model = SentenceTransformer(EMBEDDING_MODEL, device="cpu")
 
         if ENABLE_LOCAL_GENERATION:
-            # Optional only: FLAN-T5 is disabled by default on small Render instances.
             from transformers import pipeline
             print(f"Loading local generation model: {GENERATION_MODEL}")
             generator = pipeline("text2text-generation", model=GENERATION_MODEL, device=-1)
@@ -177,8 +206,13 @@ async def lifespan(app: FastAPI):
 
         if client is not None:
             client.admin.command("ping")
+            load_subjects()
             load_knowledge()
-            print(f"Loaded {len(knowledge)} knowledge records into FAISS.")
+            print(
+                f"Loaded {len(knowledge)} knowledge records into FAISS "
+                f"from '{DB_NAME}.{KNOWLEDGE_COLLECTION}'. "
+                f"Loaded {len(subject_names)} subject mappings."
+            )
     except Exception as exc:
         print(f"Startup warning: {exc}")
     yield
@@ -221,6 +255,8 @@ def health():
         "embedding_model": EMBEDDING_MODEL,
         "generation_model": GENERATION_MODEL if ENABLE_LOCAL_GENERATION else "disabled (memory-safe RAG)",
         "knowledge_records": len(knowledge),
+        "knowledge_collection": f"{DB_NAME}.{KNOWLEDGE_COLLECTION}",
+        "subject_mappings": len(subject_names),
         "models_ready": embedding_model is not None,
         "local_generation": ENABLE_LOCAL_GENERATION,
     }
@@ -249,7 +285,13 @@ def reload_knowledge():
     if embedding_model is None:
         raise HTTPException(status_code=503, detail="Embedding model is not ready")
     try:
+        load_subjects()
         load_knowledge()
-        return {"success": True, "knowledge_records": len(knowledge)}
+        return {
+            "success": True,
+            "knowledge_records": len(knowledge),
+            "subject_mappings": len(subject_names),
+            "collection": f"{DB_NAME}.{KNOWLEDGE_COLLECTION}",
+        }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Knowledge reload failed: {exc}") from exc
