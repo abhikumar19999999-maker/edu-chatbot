@@ -1,11 +1,9 @@
 import React, { useState } from "react";
+import "./auth.css";
 
 const Icon = ({ children, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    {children}
-  </svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
 );
-
 const MailIcon = () => <Icon><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></Icon>;
 const LockIcon = () => <Icon><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></Icon>;
 const EyeIcon = ({ hidden }) => <Icon><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>{hidden && <path d="m3 3 18 18"/>}</Icon>;
@@ -22,145 +20,43 @@ export default function Auth({ request, onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
 
-  const switchMode = (nextMode) => {
-    setMode(nextMode);
-    setError("");
-  };
+  const switchMode = (nextMode) => { setMode(nextMode); setError(""); };
 
   const submit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setBusy(true);
-
+    e.preventDefault(); setError(""); setBusy(true);
     try {
-      const data = await request(`/auth/${mode}`, {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
+      const data = await request(`/auth/${mode}`, { method: "POST", body: JSON.stringify(form) });
       localStorage.setItem("edubot_user", JSON.stringify(data.user));
       onLogin(data.user);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   };
 
-  return (
-    <main className="auth-shell">
-      <div className="auth-orb auth-orb-one" />
-      <div className="auth-orb auth-orb-two" />
+  return <main className="auth-shell">
+    <div className="auth-orb auth-orb-one" /><div className="auth-orb auth-orb-two" />
+    <section className="auth-card" aria-label="EduBot authentication">
+      <div className="auth-brand-mark" aria-hidden="true">🤖</div>
+      <div className="auth-brand">Edu<span>Bot</span></div>
+      <p className="auth-subtitle">AI-powered educational assistant</p>
 
-      <section className="auth-card" aria-label="EduBot authentication">
-        <div className="auth-brand-mark" aria-hidden="true">🤖</div>
-        <div className="auth-brand">Edu<span>Bot</span></div>
-        <p className="auth-subtitle">AI-powered educational assistant</p>
+      <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
+        <button type="button" role="tab" aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => switchMode("login")}><LoginIcon/><span>Sign in</span></button>
+        <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => switchMode("register")}><UserPlusIcon/><span>Create account</span></button>
+      </div>
 
-        <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "login"}
-            className={mode === "login" ? "active" : ""}
-            onClick={() => switchMode("login")}
-          >
-            <LoginIcon />
-            <span>Sign in</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "register"}
-            className={mode === "register" ? "active" : ""}
-            onClick={() => switchMode("register")}
-          >
-            <UserPlusIcon />
-            <span>Create account</span>
-          </button>
-        </div>
+      <form onSubmit={submit} className="auth-form">
+        {mode === "register" && <label className="auth-field"><span className="auth-field-icon"><UserPlusIcon/></span><input autoComplete="name" placeholder="Full name" value={form.name} onChange={e => setForm({...form,name:e.target.value})} required/></label>}
+        <label className="auth-field"><span className="auth-field-icon"><MailIcon/></span><input type="email" autoComplete="email" placeholder="Email address" value={form.email} onChange={e => setForm({...form,email:e.target.value})} required/></label>
+        <label className="auth-field"><span className="auth-field-icon"><LockIcon/></span><input type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder="Password (8+ characters)" value={form.password} onChange={e => setForm({...form,password:e.target.value})} minLength={8} required/><button type="button" className="password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"}><EyeIcon hidden={showPassword}/></button></label>
 
-        <form onSubmit={submit} className="auth-form">
-          {mode === "register" && (
-            <label className="auth-field">
-              <span className="auth-field-icon"><UserPlusIcon /></span>
-              <input
-                autoComplete="name"
-                placeholder="Full name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-            </label>
-          )}
+        {mode === "login" && <div className="auth-options"><label className="remember-option"><input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}/><span className="custom-check">✓</span><span>Remember me</span></label><button type="button" className="forgot-link" disabled title="Password recovery is not configured yet">Forgot password?</button></div>}
+        {error && <div className="error-box" role="alert">{error}</div>}
+        <button className="auth-submit" disabled={busy} type="submit"><span>{busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}</span><span className="submit-arrow">→</span></button>
+      </form>
 
-          <label className="auth-field">
-            <span className="auth-field-icon"><MailIcon /></span>
-            <input
-              type="email"
-              autoComplete="email"
-              placeholder="Email address"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-            />
-          </label>
-
-          <label className="auth-field">
-            <span className="auth-field-icon"><LockIcon /></span>
-            <input
-              type={showPassword ? "text" : "password"}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              placeholder="Password (8+ characters)"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              minLength={8}
-              required
-            />
-            <button
-              type="button"
-              className="password-toggle"
-              onClick={() => setShowPassword((value) => !value)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              <EyeIcon hidden={showPassword} />
-            </button>
-          </label>
-
-          {mode === "login" && (
-            <div className="auth-options">
-              <label className="remember-option">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                />
-                <span className="custom-check">✓</span>
-                <span>Remember me</span>
-              </label>
-              <button type="button" className="forgot-link" disabled title="Password recovery is not configured yet">
-                Forgot password?
-              </button>
-            </div>
-          )}
-
-          {error && <div className="error-box" role="alert">{error}</div>}
-
-          <button className="auth-submit" disabled={busy} type="submit">
-            <span>{busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}</span>
-            <span className="submit-arrow">→</span>
-          </button>
-        </form>
-
-        <div className="auth-security">
-          <ShieldIcon />
-          <span>Secure session <b>•</b> HttpOnly cookie</span>
-        </div>
-      </section>
-
-      <footer className="auth-footer">
-        <GraduationIcon />
-        <span>Built for students. <strong>Grounded in knowledge.</strong></span>
-      </footer>
-    </main>
-  );
+      <div className="auth-security"><ShieldIcon/><span>Secure session <b>•</b> HttpOnly cookie</span></div>
+    </section>
+    <footer className="auth-footer"><GraduationIcon/><span>Built for students. <strong>Grounded in knowledge.</strong></span></footer>
+  </main>;
 }
