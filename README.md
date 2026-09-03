@@ -1,1277 +1,660 @@
 # 🎓 EduBot — AI-Powered Educational Chatbot
 
+<p align="center"><strong>AI-powered educational assistance using NLP, semantic retrieval, embeddings, and Retrieval-Augmented Generation.</strong></p>
+
 <p align="center">
-  <strong>An intelligent educational assistant powered by NLP, semantic retrieval, vector search and AI.</strong>
+  <a href="https://edu-chatbot-2-d8mb.onrender.com"><img src="https://img.shields.io/badge/Live%20Frontend-Render-46E3B7?style=for-the-badge" alt="Live Frontend"></a>
+  <a href="https://github.com/abhikumar19999999-maker/edu-chatbot"><img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repository"></a>
 </p>
 
 <p align="center">
-  <a href="https://edu-chatbot-8zft.onrender.com">
-    <img src="https://img.shields.io/badge/Live-Demo-success?style=for-the-badge" alt="Live Demo">
-  </a>
-  <a href="https://github.com/abhikumar19999999-maker/edu-chatbot">
-    <img src="https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github" alt="GitHub">
-  </a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-24.x-green?logo=node.js" alt="Node.js">
-  <img src="https://img.shields.io/badge/Express.js-5.x-lightgrey?logo=express" alt="Express">
-  <img src="https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb" alt="MongoDB">
-  <img src="https://img.shields.io/badge/Vector%20Search-MongoDB%20Atlas-blue" alt="Vector Search">
-  <img src="https://img.shields.io/badge/JavaScript-ESM-yellow?logo=javascript" alt="JavaScript">
-  <img src="https://img.shields.io/badge/Deployment-Render-purple" alt="Render">
+<img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black">
+<img src="https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white">
+<img src="https://img.shields.io/badge/AI-Sentence%20Transformers-orange">
+<img src="https://img.shields.io/badge/Retrieval-FAISS-blue">
+<img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white">
+<img src="https://img.shields.io/badge/Deployment-Render-purple">
 </p>
 
 ---
 
 ## 🌐 Live Application
 
-### 🚀 [Open EduBot](https://edu-chatbot-8zft.onrender.com)
+**Frontend:** https://edu-chatbot-2-d8mb.onrender.com  
+**Research API:** https://edu-chatbot-1-2m2i.onrender.com  
+**Health:** https://edu-chatbot-1-2m2i.onrender.com/health
 
-### ❤️ Production Health Check
-
-https://edu-chatbot-8zft.onrender.com/api/health
-
-The production health endpoint confirms:
-
-```json
-{
-  "success": true,
-  "service": "EduBot API",
-  "database": "connected",
-  "environment": "production"
-}
-```
+The production research frontend communicates with the FastAPI backend through authenticated `/app` routes.
 
 ---
 
-# 📖 About EduBot
+## 📖 About
 
-EduBot is a full-stack educational chatbot designed to provide students with accessible, context-aware academic assistance.
+EduBot is an AI-powered educational chatbot designed to help students ask academic questions and receive answers grounded in a curated educational knowledge base.
 
-The system combines:
+The current research implementation combines:
 
-- Natural Language Processing
-- Knowledge-base retrieval
-- Semantic vector search
-- Embeddings
-- Retrieval-Augmented Generation concepts
-- Conversational memory
-- User feedback
-- JWT authentication
-- Administrative management
+- React + Vite frontend
+- Python + FastAPI backend
+- Sentence Transformers embeddings
+- FAISS semantic retrieval
+- MongoDB Atlas persistence
+- Retrieval-Augmented Generation (RAG)
+- Optional local FLAN-T5 generation
+- Grounded extractive fallback when local generation is disabled
+- JWT authentication with HTTP-only cookies
+- Student dashboard and conversation history
+- Admin dashboard and knowledge management
+- Student feedback collection
 
-The core objective is to reduce the difficulty of finding relevant, syllabus-oriented educational information and provide students with a conversational interface for asking academic questions.
-
-The project's academic design is based around the principle of grounding generated answers in curated educational knowledge, reducing the risk of unsupported responses. This RAG-oriented approach is also described in the accompanying project paper. 
-
----
-
-# 🎯 Problem Statement
-
-Students often encounter academic questions while studying independently, outside normal classroom or faculty-support hours.
-
-Traditional approaches require students to:
+The main principle is:
 
 ```text
-Search Google
-      ↓
-Open multiple websites
-      ↓
-Filter irrelevant information
-      ↓
-Check accuracy
-      ↓
-Find syllabus-relevant material
-      ↓
-Understand the answer
+Question → Embedding → Semantic Retrieval → Relevant Knowledge → Grounded Answer
 ```
 
-EduBot aims to simplify this process:
+---
+
+## 📚 Research Paper
+
+**“Design and Development of an AI-Powered Educational Chatbot Using Natural Language Processing and Machine Learning”**
+
+**Authors**
+
+- Abhi Kumar — B.Tech 3rd Year, CSE
+- Sachin Singh — B.Tech 3rd Year, CSE
+- Yash Sharma — B.Tech 3rd Year, CSE
+- Hi-Tech Institute of Engineering and Technology
+
+---
+
+## 🎯 Problem Statement
+
+Students often need quick explanations of academic concepts while studying independently. Traditional search can require multiple websites, manual filtering, and checking whether information is relevant to the student's subject.
+
+EduBot simplifies this workflow:
 
 ```text
 Student Question
        ↓
-EduBot
+Query Processing
        ↓
-Relevant Knowledge
+Semantic Embedding
        ↓
-Contextual Answer
+FAISS Retrieval
+       ↓
+Relevant Educational Knowledge
+       ↓
+Grounded Response
        ↓
 Student
 ```
 
 ---
 
-# ✨ Key Features
+## ✨ Features
 
-## 👨‍🎓 Student Features
+### 👨‍🎓 Student
 
-- 🔐 Secure registration and login
-- 🎫 JWT authentication
-- 💬 AI-powered chat
-- 📚 Subject selection
-- 🔎 Knowledge retrieval
-- 🧠 Semantic/vector search
-- 🗂️ Conversation history
-- ➕ New conversation creation
-- 💾 Persistent messages
-- 👍 Helpful feedback
-- 👎 Not helpful feedback
-- 🤖 Typing indicator
-- 👤 Automatic avatar
-- 📱 Responsive interface
-- 🚪 Secure logout
+- Secure registration and login
+- JWT session authentication
+- AI educational chat
+- Subject selection
+- Semantic knowledge retrieval
+- Conversation history
+- New conversations
+- Persistent messages
+- Helpful / not-helpful feedback
+- Student dashboard
+- User avatar
+- Responsive interface
+- Secure logout
 
----
+### 🛠️ Admin
 
-## 👨‍💼 Admin Features
+- Role-based admin authorization
+- Admin dashboard
+- User management
+- Subject management
+- Knowledge-base management
+- Feedback monitoring
+- Add, edit and delete knowledge
+- Activate/deactivate records
+- System statistics
 
-- 🔐 Admin authentication
-- 📊 Admin dashboard
-- 👥 User management
-- 📚 Subject management
-- 🧠 Knowledge-base management
-- 💬 Conversation monitoring
-- ⭐ Feedback monitoring
-- ➕ Add knowledge
-- ✏️ Update knowledge
-- 🗑️ Delete knowledge
-- 🔄 Activate/deactivate knowledge
-- 📈 System statistics
+> New registrations are created as `student` accounts. Admin access is protected by the backend.
 
 ---
 
-# 🧠 Core AI / Retrieval Workflow
-
-The central idea is to retrieve relevant educational information before producing an answer.
+## 🧠 AI Architecture
 
 ```mermaid
 flowchart TD
-    A[👨‍🎓 Student Question] --> B[📝 Query Processing]
-
-    B --> C[🧠 Query Embedding]
-
-    C --> D[(🗄️ MongoDB Atlas)]
-
-    D --> E[🔎 Vector Search]
-
-    E --> F[📚 Relevant Knowledge]
-
-    F --> G[🧩 Context Construction]
-
-    G --> H[🤖 Response Generation]
-
-    H --> I[💬 Final Answer]
-
-    I --> J[⭐ Student Feedback]
-
-    J --> K[📊 Feedback Data]
-
-    K -. Future Improvement .-> E
-
-    style A fill:#e8f1ff
-    style I fill:#e8fff0
-    style D fill:#fff4e5
-    style E fill:#f1e8ff
+    A[Student Question] --> B[FastAPI Chat Endpoint]
+    B --> C[Query Embedding]
+    C --> D[Sentence Transformer]
+    D --> E[FAISS Semantic Search]
+    E --> F[Top Relevant Knowledge]
+    F --> G[Context Construction]
+    G --> H{Local Generation Enabled?}
+    H -->|Yes| I[FLAN-T5]
+    H -->|No| J[Grounded Extractive RAG]
+    I --> K[Final Answer]
+    J --> K
+    K --> L[Save Conversation]
+    L --> M[Student Feedback]
 ```
+
+### Retrieval
+
+The backend uses `sentence-transformers/all-MiniLM-L6-v2` to create semantic embeddings and FAISS for similarity search. Knowledge records are loaded from MongoDB Atlas and indexed in memory when the API initializes.
+
+### Generation
+
+The configured generation model is `google/flan-t5-small`. Local generation can be enabled or disabled through `ENABLE_LOCAL_GENERATION`. When disabled, the system uses a grounded extractive RAG response from retrieved knowledge.
 
 ---
 
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TB
-
-    U[👨‍🎓 Student]
-
-    subgraph FRONTEND["🌐 Frontend"]
-        UI[HTML / CSS / JavaScript]
-        AUTH_UI[Login / Register]
-        CHAT_UI[Chat Interface]
+    USER[Student / Admin]
+    subgraph FRONTEND[React Frontend]
+        HOME[Landing Page]
+        AUTH[Login / Register]
+        CHAT[Chat Interface]
         DASH[Student Dashboard]
-        ADMIN_UI[Admin Panel]
+        ADMIN[Admin Center]
     end
-
-    subgraph BACKEND["⚙️ Node.js Backend"]
-        API[Express REST API]
-
-        AUTH[Authentication]
-        CHAT[Chat Service]
-        SUBJECT[Subject Service]
-        KNOW[Knowledge Service]
-        FEEDBACK[Feedback Service]
-        ADMIN[Admin Service]
-        DASHBOARD[Dashboard Service]
+    subgraph API[FastAPI Research Backend]
+        AUTHAPI[Authentication]
+        CHATAPI[Chat API]
+        DASHAPI[Dashboard API]
+        ADMINAPI[Admin API]
+        FEEDBACK[Feedback API]
     end
-
-    subgraph INTELLIGENCE["🧠 Retrieval & AI"]
-        NLP[NLP Processing]
-        EMB[Embedding Service]
-        RETRIEVE[Retrieval Service]
-        AI[AI Response Service]
+    subgraph AI[AI / Retrieval]
+        EMB[Sentence Transformer]
+        FAISS[FAISS Index]
+        RAG[RAG Layer]
+        T5[Optional FLAN-T5]
     end
-
-    DB[(🍃 MongoDB Atlas)]
-
-    VECTOR[🔎 MongoDB Vector Search]
-
-    U --> UI
-
-    UI --> AUTH_UI
-    UI --> CHAT_UI
-    UI --> DASH
-    UI --> ADMIN_UI
-
-    AUTH_UI --> API
-    CHAT_UI --> API
-    DASH --> API
-    ADMIN_UI --> API
-
-    API --> AUTH
-    API --> CHAT
-    API --> SUBJECT
-    API --> KNOW
-    API --> FEEDBACK
-    API --> ADMIN
-    API --> DASHBOARD
-
-    CHAT --> NLP
-    NLP --> EMB
-    EMB --> RETRIEVE
-    RETRIEVE --> VECTOR
-
-    VECTOR --> DB
-    KNOW --> DB
-    AUTH --> DB
-    CHAT --> DB
+    DB[(MongoDB Atlas)]
+    USER --> HOME
+    USER --> AUTH
+    USER --> CHAT
+    USER --> DASH
+    USER --> ADMIN
+    AUTH --> AUTHAPI
+    CHAT --> CHATAPI
+    DASH --> DASHAPI
+    ADMIN --> ADMINAPI
+    CHAT --> FEEDBACK
+    CHATAPI --> EMB
+    EMB --> FAISS
+    FAISS --> RAG
+    RAG --> T5
+    RAG --> CHATAPI
+    AUTHAPI --> DB
+    CHATAPI --> DB
+    DASHAPI --> DB
+    ADMINAPI --> DB
     FEEDBACK --> DB
-    ADMIN --> DB
-    DASHBOARD --> DB
-
-    RETRIEVE --> AI
-    AI --> CHAT
-    CHAT --> API
-    API --> CHAT_UI
 ```
 
 ---
 
-# 🔄 Complete Chat Workflow
+## 🔐 Authentication & Authorization
+
+EduBot uses JWT authentication stored in an HTTP-only cookie.
+
+```text
+Register / Login
+       ↓
+Verify credentials
+       ↓
+Create JWT
+       ↓
+Secure HTTP-only cookie
+       ↓
+Authenticated request
+       ↓
+Role verification
+       ↓
+Student / Admin access
+```
+
+Admin routes require:
+
+```text
+Authenticated session
+        AND
+role == "admin"
+```
+
+Ordinary registration never grants admin privileges.
+
+---
+
+## 📚 Knowledge Base
+
+Knowledge records can contain:
+
+- Title
+- Question
+- Answer
+- Topic
+- Keywords
+- Difficulty
+- Source
+- Subject
+- Embedding
+- Active/inactive status
+
+During initialization, knowledge records are converted into vectors and indexed with FAISS.
+
+---
+
+## 🔎 Semantic Retrieval
+
+```text
+Knowledge Records
+       ↓
+Text Preparation
+       ↓
+Sentence Transformer
+       ↓
+Embedding Vectors
+       ↓
+FAISS Index
+
+Student Question
+       ↓
+Query Embedding
+       ↓
+Similarity Search
+       ↓
+Top-K Relevant Records
+       ↓
+RAG Context
+```
+
+The number of retrieved records and similarity threshold are configurable.
+
+---
+
+## 💬 Chat Workflow
 
 ```mermaid
 sequenceDiagram
-
     actor Student
-    participant UI as Chat UI
-    participant API as Express API
-    participant Auth as JWT Middleware
-    participant Chat as Chat Service
-    participant Search as Retrieval Service
+    participant UI as React UI
+    participant API as FastAPI
+    participant Auth as JWT Auth
+    participant Embed as Sentence Transformer
+    participant Search as FAISS
     participant DB as MongoDB Atlas
-    participant AI as AI Service
-
-    Student->>UI: Enter question
-
-    UI->>API: POST /api/chat
-
-    API->>Auth: Validate JWT
-
-    Auth-->>API: User authenticated
-
-    API->>Chat: Process question
-
-    Chat->>Search: Retrieve relevant knowledge
-
-    Search->>DB: Vector search
-
-    DB-->>Search: Relevant documents
-
-    Search-->>Chat: Retrieved context
-
-    Chat->>AI: Generate grounded response
-
-    AI-->>Chat: Answer
-
-    Chat->>DB: Save messages
-
-    Chat-->>API: Response
-
-    API-->>UI: Bot answer
-
+    participant RAG as RAG Layer
+    Student->>UI: Ask academic question
+    UI->>API: POST /app/chat
+    API->>Auth: Validate session
+    Auth-->>API: Authenticated user
+    API->>Embed: Create query embedding
+    Embed->>Search: Search vector index
+    Search-->>API: Relevant knowledge
+    API->>RAG: Build grounded answer
+    RAG-->>API: Answer + sources
+    API->>DB: Save messages
+    API-->>UI: Response
     UI-->>Student: Display answer
 ```
 
 ---
 
-# 🔐 Authentication Workflow
+## 📊 Student Dashboard
 
-```mermaid
-flowchart TD
-
-    A[👤 User] --> B{Has Account?}
-
-    B -- No --> C[📝 Register]
-
-    C --> D[🔒 Hash Password]
-
-    D --> E[(MongoDB Atlas)]
-
-    E --> F[Account Created]
-
-    B -- Yes --> G[🔑 Login]
-
-    F --> G
-
-    G --> H[Verify Credentials]
-
-    H --> I{Valid?}
-
-    I -- No --> J[❌ Invalid Credentials]
-
-    I -- Yes --> K[🎫 Generate JWT]
-
-    K --> L[💾 Store Token]
-
-    L --> M[🔓 Access Protected Routes]
-
-    M --> N[💬 Chat / Dashboard / Feedback]
-```
+The dashboard uses stored activity to show conversations, questions, bot responses, feedback ratings, helpful answers, subjects studied, and recent activity.
 
 ---
 
-# 📚 Knowledge Management Workflow
+## 🛠️ Admin Center
 
-```mermaid
-flowchart LR
+The Admin Center provides protected management for:
 
-    A[👨‍💼 Admin] --> B[Add / Edit Knowledge]
-
-    B --> C[Knowledge Record]
-
-    C --> D[Build Knowledge Text]
-
-    D --> E[Generate Embedding]
-
-    E --> F[(MongoDB Atlas)]
-
-    F --> G[Vector Index]
-
-    G --> H[Semantic Retrieval]
-
-    H --> I[Student Query]
+```text
+Users
+Subjects
+Knowledge
+Feedback
+Statistics
 ```
+
+Only authenticated users with the `admin` role can access these endpoints.
 
 ---
 
-# 🔎 Vector Search Workflow
+## 🗄️ Database
 
-```mermaid
-flowchart TD
+MongoDB Atlas stores persistent application data.
 
-    A[Knowledge Content] --> B[Text Preparation]
+| Collection | Purpose |
+|---|---|
+| `users` | Student/admin accounts and roles |
+| `subjects` | Academic subjects |
+| `knowledges` | Educational knowledge records |
+| `conversations` | User conversations |
+| `messages` | User and bot messages |
+| `feedbacks` | Student feedback |
 
-    B --> C[Embedding Model]
-
-    C --> D[Vector]
-
-    D --> E[(MongoDB Atlas)]
-
-    E --> F[Vector Search Index]
-
-    G[Student Query] --> H[Query Embedding]
-
-    H --> F
-
-    F --> I[Similarity Search]
-
-    I --> J[Top Relevant Knowledge]
-
-    J --> K[Response Context]
-```
+FAISS provides the runtime vector index for semantic retrieval.
 
 ---
 
-# 💬 Conversation Workflow
-
-```mermaid
-flowchart TD
-
-    A[Start New Chat] --> B[Create Conversation]
-
-    B --> C[Student Message]
-
-    C --> D[Retrieve Knowledge]
-
-    D --> E[Generate Response]
-
-    E --> F[Save User Message]
-
-    F --> G[Save Bot Message]
-
-    G --> H[Display Response]
-
-    H --> I{Continue?}
-
-    I -- Yes --> C
-
-    I -- No --> J[Conversation Stored]
-```
-
----
-
-# ⭐ Feedback Loop
-
-```mermaid
-flowchart LR
-
-    A[Bot Response] --> B[Student]
-
-    B --> C{Was it Helpful?}
-
-    C -->|👍 Helpful| D[Positive Feedback]
-
-    C -->|👎 Not Helpful| E[Negative Feedback]
-
-    D --> F[(Feedback Collection)]
-
-    E --> F
-
-    F --> G[Admin Analytics]
-
-    G --> H[Identify Weak Responses]
-
-    H --> I[Improve Knowledge / Retrieval]
-
-    I -.-> A
-```
-
-The project paper also describes an iterative feedback mechanism intended to improve response precision over time. 3
-
----
-
-# ☁️ Production Deployment Architecture
-
-```mermaid
-flowchart TB
-
-    DEV[👨‍💻 Developer]
-
-    DEV --> GIT[GitHub]
-
-    GIT --> RENDER[☁️ Render]
-
-    RENDER --> SERVER[Node.js + Express]
-
-    SERVER --> DB[(MongoDB Atlas)]
-
-    SERVER --> VECTOR[MongoDB Vector Search]
-
-    USER[🌍 Student Browser] --> RENDER
-
-    RENDER --> USER
-```
-
----
-
-# 🔄 CI/CD Deployment Workflow
-
-```mermaid
-flowchart LR
-
-    A[Code Changes] --> B[git add]
-
-    B --> C[git commit]
-
-    C --> D[git push]
-
-    D --> E[GitHub main]
-
-    E --> F[Render Build]
-
-    F --> G[npm --prefix server ci]
-
-    G --> H[Deploy]
-
-    H --> I[Node server.js]
-
-    I --> J[MongoDB Connection]
-
-    J --> K[/api/health]
-
-    K --> L{Healthy?}
-
-    L -->|Yes| M[🟢 Production]
-
-    L -->|No| N[🔴 Deployment Failure]
-```
-
----
-
-# 🗄️ Database Architecture
-
-EduBot uses MongoDB Atlas for persistent application data.
-
-```mermaid
-erDiagram
-
-    USER ||--o{ CONVERSATION : creates
-
-    CONVERSATION ||--o{ MESSAGE : contains
-
-    MESSAGE ||--o| FEEDBACK : receives
-
-    SUBJECT ||--o{ CONVERSATION : categorizes
-
-    SUBJECT ||--o{ KNOWLEDGE : contains
-
-    USER {
-        ObjectId _id
-        string name
-        string email
-        string password
-        string role
-        string avatar
-    }
-
-    SUBJECT {
-        ObjectId _id
-        string name
-        string icon
-        boolean isActive
-    }
-
-    KNOWLEDGE {
-        ObjectId _id
-        ObjectId subject
-        string title
-        string question
-        string answer
-        array keywords
-        string topic
-        string difficulty
-        array embedding
-        boolean isActive
-    }
-
-    CONVERSATION {
-        ObjectId _id
-        ObjectId user
-        ObjectId subject
-        string title
-    }
-
-    MESSAGE {
-        ObjectId _id
-        ObjectId conversation
-        string sender
-        string content
-    }
-
-    FEEDBACK {
-        ObjectId _id
-        ObjectId message
-        ObjectId user
-        number rating
-        boolean helpful
-    }
-```
-
----
-
-# 📁 Project Structure
+## 📁 Project Structure
 
 ```text
 edu-chatbot/
-│
-├── public/
-│   ├── css/
-│   ├── js/
-│   │
+├── research_frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── Auth.jsx
+│   │   ├── ChatView.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── Admin.jsx
+│   │   ├── main.jsx
+│   │   ├── style.css
+│   │   ├── auth.css
+│   │   ├── home.css
+│   │   └── admin.css
 │   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── chat.html
-│   ├── dashboard.html
-│   └── admin.html
-│
-├── server/
-│   │
-│   ├── config/
-│   │   └── database.js
-│   │
-│   ├── controllers/
-│   │
-│   ├── data/
-│   │   ├── seedSubjects.js
-│   │   ├── seedKnowledge.js
-│   │   ├── createAdmin.js
-│   │   └── generateEmbeddings.js
-│   │
-│   ├── middleware/
-│   │   ├── authMiddleware.js
-│   │   ├── adminMiddleware.js
-│   │   ├── validationMiddleware.js
-│   │   └── rateLimitMiddleware.js
-│   │
-│   ├── models/
-│   │
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── subjectRoutes.js
-│   │   ├── knowledgeRoutes.js
-│   │   ├── chatRoutes.js
-│   │   ├── feedbackRoutes.js
-│   │   ├── dashboardRoutes.js
-│   │   └── adminRoutes.js
-│   │
-│   ├── services/
-│   │   ├── aiService.js
-│   │   ├── embeddingService.js
-│   │   ├── retrievalService.js
-│   │   └── knowledgeTextService.js
-│   │
-│   ├── validators/
-│   │
 │   ├── package.json
-│   ├── package-lock.json
-│   └── server.js
-│
-├── .env.example
-├── .gitignore
+│   └── render.yaml
+├── research_backend/
+│   ├── main.py
+│   ├── features.py
+│   ├── app.py
+│   ├── evaluate.py
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── render.yaml
+├── server/              # Legacy Node.js implementation
+├── public/              # Legacy frontend assets
 ├── render.yaml
 └── README.md
 ```
 
 ---
 
-# 🛠️ Technology Stack
+## 🛠️ Technology Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | HTML5, CSS3, JavaScript |
-| Backend | Node.js |
-| API | Express.js |
+| Frontend | React 19 + Vite |
+| Backend | Python + FastAPI |
 | Database | MongoDB Atlas |
-| ODM | Mongoose |
-| Authentication | JWT |
-| Password Security | bcrypt/bcryptjs |
-| NLP | Natural |
-| Embeddings | Transformers.js / embedding service |
-| Retrieval | MongoDB Vector Search |
-| Security | Helmet |
-| CORS | Express CORS |
-| Rate Limiting | Express Rate Limit |
-| Validation | Zod |
+| Embeddings | Sentence Transformers |
+| Embedding Model | `sentence-transformers/all-MiniLM-L6-v2` |
+| Vector Retrieval | FAISS |
+| Generation | FLAN-T5 Small (optional) |
+| AI Pattern | Retrieval-Augmented Generation |
+| Authentication | JWT + HTTP-only cookies |
+| Password Hashing | bcrypt |
+| API Server | Uvicorn |
 | Version Control | Git + GitHub |
 | Deployment | Render |
 
 ---
 
-# 🔌 API Overview
+## 🔌 API Overview
 
-Production API:
+**Research API:** `https://edu-chatbot-1-2m2i.onrender.com`
 
-```text
-https://edu-chatbot-8zft.onrender.com/api
-```
-
-## Authentication
+### Health
 
 ```http
-POST /api/auth/register
-POST /api/auth/login
+GET /health
 ```
 
-## Subjects
+### Authentication
 
 ```http
-GET /api/subjects
+POST /app/auth/register
+POST /app/auth/login
+POST /app/auth/logout
+GET  /app/auth/me
 ```
 
-## Chat
+### Subjects
 
 ```http
-POST /api/chat
-GET /api/chat/history
-GET /api/chat/:id
+GET /app/subjects
 ```
 
-## Feedback
+### Chat
 
 ```http
-POST /api/feedback
+POST   /app/chat
+GET    /app/chat/history
+GET    /app/chat/:conversation_id
+DELETE /app/chat/:conversation_id
 ```
 
-## Dashboard
+### Feedback
 
 ```http
-GET /api/dashboard
+POST /app/feedback
+GET  /app/feedback/mine
 ```
 
-## Admin
+### Dashboard
 
 ```http
-/api/admin/*
+GET /app/dashboard
 ```
 
-## Health
+### Admin
 
 ```http
-GET /api/health
+GET /app/admin/dashboard
 ```
+
+Additional protected admin endpoints support user, subject, knowledge, and feedback management.
 
 ---
 
-# 🔑 Authorization
+## ⚙️ Environment Variables
 
-Protected endpoints use JWT authentication.
-
-Send:
-
-```http
-Authorization: Bearer YOUR_JWT_TOKEN
-```
-
-Example:
-
-```http
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-```
-
----
-
-# ⚙️ Environment Variables
-
-Create:
-
-```text
-server/.env
-```
-
-Example:
+### Backend
 
 ```env
-PORT=5000
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>
+MONGODB_DB=edubot
+JWT_SECRET=replace-with-a-long-random-secret
+FRONTEND_URL=http://localhost:5173
 
-MONGODB_URI=your_mongodb_atlas_connection_string
-
-JWT_SECRET=your_long_random_secret
-
-NODE_ENV=development
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+GENERATION_MODEL=google/flan-t5-small
+TOP_K=5
+MIN_RETRIEVAL_SCORE=0.25
+ENABLE_LOCAL_GENERATION=false
 ```
 
-If the current AI service requires an external provider, configure its required API credentials as environment variables.
+Never commit real credentials, database passwords, or JWT secrets.
 
-### Never commit:
+### Frontend
 
-```text
-.env
-server/.env
+```env
+VITE_API_URL=https://edu-chatbot-1-2m2i.onrender.com
 ```
 
-Use:
-
-```text
-.env.example
-```
-
-instead.
+Vite variables are embedded at build time, so changes require a frontend rebuild/deployment.
 
 ---
 
-# 💻 Local Installation
+## 🚀 Run Locally
 
-## 1. Clone Repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/abhikumar19999999-maker/edu-chatbot.git
-```
-
-```bash
 cd edu-chatbot
 ```
 
----
-
-## 2. Enter Server
+### 2. Backend
 
 ```bash
-cd server
+cd research_backend
+python -m venv .venv
 ```
 
----
-
-## 3. Install Dependencies
+Windows:
 
 ```bash
+.venv\Scripts\activate
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Install and run:
+
+```bash
+pip install -r requirements.txt
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 3. Frontend
+
+In another terminal:
+
+```bash
+cd research_frontend
 npm install
+npm run dev
 ```
 
----
-
-## 4. Configure Environment
-
-Create:
-
-```text
-server/.env
-```
-
-Add:
+Set the frontend API URL for local development:
 
 ```env
-PORT=5000
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-NODE_ENV=development
+VITE_API_URL=http://localhost:8000
 ```
 
 ---
 
-## 5. Start Development Server
+## ☁️ Production Deployment
 
-```bash
-npm run dev
+```mermaid
+flowchart TB
+    G[GitHub main]
+    G --> F[Render Static Site]
+    G --> B[Render Web Service]
+    F --> UI[edu-chatbot-2-d8mb.onrender.com]
+    B --> API[edu-chatbot-1-2m2i.onrender.com]
+    API --> DB[(MongoDB Atlas)]
+    UI --> API
 ```
 
-The application will be available at:
+### Frontend
+
+```yaml
+rootDir: research_frontend
+buildCommand: npm install && npm run build
+staticPublishPath: ./dist
+```
+
+### Backend
+
+```yaml
+rootDir: research_backend
+buildCommand: pip install -r requirements.txt
+startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+healthCheckPath: /health
+```
+
+Both service configuration files are stored in the repository.
+
+---
+
+## 🔒 Security
+
+- HTTP-only authentication cookies
+- Secure production cookies
+- JWT expiration
+- bcrypt password hashing
+- Role-based admin authorization
+- Protected user-specific conversations
+- Protected feedback access
+- Pydantic input validation
+- Environment-based secrets
+- CORS controlled by `FRONTEND_URL`
+
+Production secrets should be configured in Render environment variables.
+
+---
+
+## 🧪 Research Evaluation
+
+Recommended measurable evaluation areas include:
+
+- Retrieval relevance / similarity scores
+- Response latency
+- Grounded response rate
+- Student helpfulness ratings
+- Knowledge-base coverage
+- Authentication and authorization correctness
+- System availability
+
+Numerical performance claims should be based on measurements collected from the system.
+
+---
+
+## 📌 Implementation Note
+
+This repository contains the earlier Node.js application as well as the newer research implementation.
+
+The current research deployment documented above uses:
 
 ```text
-http://localhost:5000
-```
-
----
-
-# 📦 NPM Commands
-
-Run commands from:
-
-```text
-server/
-```
-
-### Development
-
-```bash
-npm run dev
-```
-
-### Production
-
-```bash
-npm start
-```
-
-### Seed Subjects
-
-```bash
-npm run seed:subjects
-```
-
-### Seed Knowledge
-
-```bash
-npm run seed:knowledge
-```
-
-### Create Admin
-
-```bash
-npm run create:admin
-```
-
-### Generate Embeddings
-
-```bash
-npm run generate:embeddings
-```
-
----
-
-# 🧪 Testing
-
-## Authentication
-
-- [ ] Register new user
-- [ ] Login
-- [ ] Invalid credentials
-- [ ] Logout
-- [ ] Protected route without token
-- [ ] Protected route with valid token
-
-## Chat
-
-- [ ] Chat page opens
-- [ ] Subject list loads
-- [ ] Send message
-- [ ] Bot responds
-- [ ] New conversation
-- [ ] Conversation history
-- [ ] Reload conversation
-- [ ] Multiple messages
-- [ ] Feedback buttons
-
-## Admin
-
-- [ ] Admin login
-- [ ] Admin dashboard
-- [ ] User statistics
-- [ ] Subject management
-- [ ] Knowledge management
-- [ ] Feedback management
-- [ ] Unauthorized admin access blocked
-
-## Production
-
-- [ ] Render deployment succeeds
-- [ ] `/api/health` works
-- [ ] MongoDB reports connected
-- [ ] Registration works
-- [ ] Login works
-- [ ] Chat works
-- [ ] Retrieval works
-- [ ] Feedback works
-- [ ] Admin panel works
-
----
-
-# 🔒 Security
-
-EduBot implements several backend security practices.
-
-### Helmet
-
-Adds security-related HTTP headers.
-
-### JWT
-
-Protects authenticated API endpoints.
-
-### Password Hashing
-
-Passwords are hashed before storage.
-
-### Rate Limiting
-
-Helps reduce abusive API traffic.
-
-### Validation
-
-Incoming requests are validated before processing.
-
-### Request Limits
-
-JSON and URL-encoded request bodies are restricted to prevent unnecessarily large requests.
-
-### Environment Secrets
-
-Sensitive credentials are kept outside source code.
-
----
-
-# 🐛 Troubleshooting
-
-## `ENOENT: package.json`
-
-If you see:
-
-```text
-Could not read package.json
-```
-
-enter the server directory:
-
-```bash
-cd server
-```
-
-then:
-
-```bash
-npm run dev
-```
-
-From the project root you can also use:
-
-```bash
-npm --prefix server run dev
-```
-
----
-
-## MongoDB Connection Failed
-
-Check:
-
-```text
-MONGODB_URI
-```
-
-Then verify:
-
-```text
+React
+  +
+FastAPI
+  +
+Sentence Transformers
+  +
+FAISS
+  +
 MongoDB Atlas
-→ Database Access
-→ Network Access
-→ Cluster
+  +
+RAG
 ```
 
-The deployed Render service must be able to reach the Atlas cluster.
+The older `server/` and `public/` implementation remains as the legacy application.
 
 ---
 
-## JWT Authentication Failed
+## 🚀 Future Improvements
 
-Check:
-
-```text
-JWT_SECRET
-```
-
-and make sure the application is using the expected production environment variable.
-
----
-
-## Chat Not Working
-
-Check the Render logs and verify:
-
-```text
-MongoDB connected
-JWT authenticated
-Chat route reached
-Retrieval service working
-AI/fallback response service working
-```
-
-Then test:
-
-```text
-GET /api/health
-```
+- Better multi-turn conversational context
+- Improved source/citation display
+- Larger curated educational datasets
+- Retrieval reranking
+- Stronger optional local generation
+- Automated evaluation datasets
+- Precision@K / Recall@K benchmarking
+- Teacher/faculty accounts
+- Advanced analytics
+- Production monitoring
 
 ---
 
-# 📊 System Evaluation
+## 📄 License
 
-The academic design of the project emphasizes three broad evaluation dimensions:
-
-```text
-Accuracy & Relevance
-        ↓
-Response Latency
-        ↓
-User Satisfaction
-```
-
-These dimensions are reflected in the project's evaluation framework. 4
-
-For production claims, however, performance numbers should only be reported after measuring the **current deployed implementation**.
+This project is developed as an academic/research project. Add an institution-approved open-source license if the project is later released publicly.
 
 ---
 
-# ⚠️ Current Limitations
-
-The system's effectiveness depends heavily on the quality and coverage of its educational knowledge base.
-
-Potential limitations include:
-
-- Incomplete knowledge coverage
-- Ambiguous student questions
-- Retrieval errors
-- AI-generated inaccuracies
-- Limited multilingual support
-- Computational cost of AI processing
-- Need for continued knowledge-base maintenance
-- Need for stronger production monitoring
-
-The accompanying academic work similarly identifies knowledge-base dependence, computational resources, ambiguous queries, and data privacy as important challenges. 5
-
----
-
-# 🚀 Future Improvements
-
-Possible future enhancements include:
-
-### 🌍 Multilingual Support
-
-Support regional languages and multilingual academic questions.
-
-### 🎙️ Voice Assistant
-
-Allow students to ask questions using voice.
-
-### 📄 Document Upload
-
-Allow administrators to upload:
-
-```text
-PDF
-DOCX
-TXT
-Lecture Notes
-Study Material
-```
-
-and automatically build the knowledge base.
-
-### 🧠 Advanced RAG
-
-Introduce:
-
-```text
-Chunking
-Metadata Filtering
-Hybrid Search
-Reranking
-Context Compression
-Citation Generation
-```
-
-### 🎓 LMS Integration
-
-Integrate with institutional learning-management systems.
-
-### 🖼️ Multimodal Learning
-
-Support:
-
-```text
-Handwritten Notes
-Diagrams
-Screenshots
-Charts
-Engineering Problems
-```
-
-These directions are consistent with the future-scope themes described in the accompanying paper, including multilingual, voice, LMS, and multimodal capabilities. 6
-
----
-
-# 🏆 Project Highlights
-
-```text
-                EDU-BOT
-                   │
-       ┌───────────┼───────────┐
-       │           │           │
-   Frontend     Backend     Database
-       │           │           │
-   HTML/CSS/JS  Express    MongoDB Atlas
-                   │
-          ┌────────┴────────┐
-          │                 │
-        NLP            Vector Search
-          │                 │
-          └────────┬────────┘
-                   │
-                  RAG
-                   │
-                   ▼
-             AI Response
-```
-
----
-
-# 📈 Project Development Progress
-
-```text
-Frontend                    ████████████████████ 100%
-Authentication              ████████████████████ 100%
-MongoDB Integration         ████████████████████ 100%
-REST API                    ████████████████████ 100%
-Chat System                 ████████████████████ 100%
-Conversation History        ████████████████████ 100%
-Admin Panel                 ████████████████████ 100%
-Knowledge Base              ████████████████████ 100%
-Embeddings                  ████████████████████ 100%
-Vector Search               ████████████████████ 100%
-Feedback System             ████████████████████ 100%
-Security Middleware         ████████████████████ 100%
-Render Deployment           ████████████████████ 100%
-```
-
----
-
-# 🌐 Production Status
-
-| Component | Status |
-|---|---|
-| Render | 🟢 Online |
-| Node.js API | 🟢 Running |
-| MongoDB Atlas | 🟢 Connected |
-| Authentication | 🟢 Implemented |
-| Chat | 🟢 Implemented |
-| Conversations | 🟢 Implemented |
-| Knowledge Base | 🟢 Implemented |
-| Vector Search | 🟢 Implemented |
-| Feedback | 🟢 Implemented |
-| Admin Panel | 🟢 Implemented |
-| Health Check | 🟢 Healthy |
-
----
-
-# 👨‍💻 Author
-
-## Abhi Kumar
-
-B.Tech — Computer Science & Engineering
-
-### GitHub
-
-https://github.com/abhikumar19999999-maker
-
-### Project Repository
-
-https://github.com/abhikumar19999999-maker/edu-chatbot
-
-### Live Application
-
-https://edu-chatbot-8zft.onrender.com
-
----
-
-# 📄 Academic Reference
-
-This project is associated with the academic work:
-
-> **Design and Development of an AI-Powered Educational Chatbot Using Natural Language Processing and Machine Learning**
-
-The academic design discusses NLP, semantic retrieval, RAG, Transformer-based generation, feedback-driven improvement, and educational knowledge grounding. 7
-
----
-
-# 📜 License
-
-This project is currently intended as an educational and portfolio project.
-
-Add a formal open-source license if you plan to distribute the source code publicly.
-
-For example:
-
-```text
-MIT License
-```
-
----
-
-# ⭐ Support
-
-If you find the project useful:
-
-⭐ Star the repository  
-🐛 Report issues  
-💡 Suggest improvements  
-🔧 Contribute enhancements
-
----
-
-<p align="center">
-  <strong>Built with ❤️ for smarter and more accessible learning.</strong>
-</p>
-
-<p align="center">
-  <strong>EduBot — Learn. Ask. Understand. 🚀</strong>
-</p>
+<p align="center"><strong>🎓 EduBot — Learn smarter with grounded AI.</strong></p>
