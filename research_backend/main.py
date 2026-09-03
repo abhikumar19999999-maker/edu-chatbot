@@ -26,7 +26,7 @@ EMBEDDING_MODEL = env_value("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM
 GENERATION_MODEL = env_value("GENERATION_MODEL", "google/flan-t5-small")
 TOP_K = max(1, min(int(env_value("TOP_K", "3")), 5))
 MIN_SCORE = float(env_value("MIN_RETRIEVAL_SCORE", "0.25"))
-FRONTEND_URL = env_value("FRONTEND_URL", "*")
+FRONTEND_URL = env_value("FRONTEND_URL", "https://edu-chatbot-2-d8mb.onrender.com")
 ENABLE_LOCAL_GENERATION = env_value("ENABLE_LOCAL_GENERATION", "false").lower() == "true"
 
 embedding_model = None
@@ -78,23 +78,24 @@ def choose_database():
     try:
         for name in client.list_database_names():
             if name not in candidates and name not in {"admin", "local", "config"}: candidates.append(name)
-    except Exception as exc: print(f"MongoDB database discovery skipped: {exc}")
+    except Exception: pass
     for name in candidates:
         try:
-            collections = set(client[name].list_collection_names())
-            if SUBJECT_COLLECTION in collections or KNOWLEDGE_COLLECTION in collections:
-                DB_NAME = name; print(f"Using MongoDB database: {DB_NAME}"); return
-        except Exception as exc: print(f"Could not inspect database '{name}': {exc}")
+            if client[name][KNOWLEDGE_COLLECTION].count_documents({}) or client[name][SUBJECT_COLLECTION].count_documents({}):
+                DB_NAME = name
+                return
+        except Exception: pass
     if candidates: DB_NAME = candidates[0]
 
 def load_subjects():
     global subject_names
+    if client is None: subject_names = {}; return
+    collection = client[DB_NAME][SUBJECT_COLLECTION]
     subject_names = {}
-    if client is None: return
-    for item in client[DB_NAME][SUBJECT_COLLECTION].find({"isActive": {"$ne": False}}, {"name": 1}):
+    for item in collection.find({"isActive": {"$ne": False}}, {"name": 1}):
         name = str(item.get("name", "")).strip()
         if name:
-            subject_names[str(item.get("_id"))] = name
+            subject_names[str(item["_id"])] = name
             subject_names[normalize(name)] = name
 
 def item_subject_name(item) -> str:
@@ -148,8 +149,7 @@ async def initialize_backend():
     global embedding_model, generator, initialization_status, initialization_error
     try:
         initialization_status = "loading_embedding_model"
-        print(f"Loading embedding model in background: {EMBEDDING_MODEL}")
-        embedding_model = await asyncio.to_thread(SentenceTransformer, EMBEDDING_MODEL, device="cpu")
+        embedding_model = await asyncio.to_thread(SentenceTransformer, EMBEDDING_MODEL)
         if ENABLE_LOCAL_GENERATION:
             from transformers import pipeline
             initialization_status = "loading_generation_model"
@@ -191,13 +191,18 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    if embedding_model is None: raise HTTPException(status_code=503, detail=f"EduBot AI models are still initializing (status: {initialization_status}). Please try again shortly.")
-    started = time.perf_counter(); query = request.message.strip(); contexts = retrieve(query, request.subject); answer = generate_answer(query, contexts); latency_ms = round((time.perf_counter() - started) * 1000, 2)
-    return ChatResponse(answer=answer, sources=contexts, retrieval_count=len(contexts), latency_ms=latency_ms, grounded=bool(contexts))
+    started = time.perf_counter()
+    if embedding_model is None or index is None:
+        raise HTTPException(status_code=503, detail="EduBot AI is still initializing. Please try again shortly.")
+    contexts = retrieve(request.message.strip(), request.subject)
+    answer = generate_answer(request.message.strip(), contexts)
+    return ChatResponse(answer=answer, sources=[Source(**x) for x in contexts], retrieval_count=len(contexts), latency_ms=round((time.perf_counter() - started) * 1000, 2), grounded=bool(contexts))
 
 @app.post("/reload")
-def reload_knowledge():
-    if embedding_model is None: raise HTTPException(status_code=503, detail="Embedding model is not ready")
-    try:
-        choose_database(); load_subjects(); load_knowledge(); return {"success": True, "knowledge_records": len(knowledge), "subject_mappings": len(subject_names), "collection": f"{DB_NAME}.{KNOWLEDGE_COLLECTION}"}
-    except Exception as exc: raise HTTPException(status_code=500, detail=f"Knowledge reload failed: {exc}") from exc
+def reload_data():
+    if embedding_model is None:
+        raise HTTPException(status_code=503, detail="Embedding model is not ready")
+    if client is None:
+        raise HTTPException(status_code=503, detail="MongoDB is not configured")
+    choose_database(); load_subjects(); load_knowledge()
+    return {"success": True, "message": "RAG index reloaded", "knowledge_records": len(knowledge), "database_name": DB_NAME}
