@@ -1,8 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+
+const fallbackSubjects = ["Python", "DBMS", "Machine Learning", "Operating System", "Computer Networks"];
+const suggestions = [
+  { title: "Machine Learning", text: "What is supervised learning?", icon: "🧠" },
+  { title: "DBMS", text: "What is normalization in DBMS?", icon: "🗄️" },
+  { title: "Operating System", text: "What is a process in an operating system?", icon: "⚙️" },
+  { title: "Computer Networks", text: "What is TCP?", icon: "🌐" },
+];
 
 function App() {
   const [message, setMessage] = useState("");
@@ -10,38 +18,245 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [health, setHealth] = useState(null);
-  const suggestions = useMemo(() => ["What is supervised learning?", "Explain a data structure.", "What is process management in an operating system?"], []);
+  const [subjects, setSubjects] = useState(fallbackSubjects);
+  const [showSources, setShowSources] = useState(true);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const inputRef = useRef(null);
+  const messagesRef = useRef(null);
+
+  const isOnline = health?.success && health?.initialization_status === "ready";
+  const activeSubjectLabel = subject || "All subjects";
 
   const checkHealth = async () => {
-    try { const response = await fetch(`${API}/health`); setHealth(await response.json()); }
-    catch { setHealth({ success: false }); }
+    try {
+      const response = await fetch(`${API}/health`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setHealth(await response.json());
+    } catch {
+      setHealth({ success: false, initialization_status: "offline" });
+    }
+  };
+
+  const loadSubjects = async () => {
+    try {
+      const response = await fetch(`${API}/subjects`, { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (Array.isArray(data.subjects) && data.subjects.length) setSubjects(data.subjects);
+    } catch {
+      // Keep the built-in subjects when the optional endpoint is unavailable.
+    }
+  };
+
+  useEffect(() => {
+    checkHealth();
+    loadSubjects();
+  }, []);
+
+  useEffect(() => {
+    const node = messagesRef.current;
+    if (node) node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+  }, [messages, loading]);
+
+  const newChat = () => {
+    setMessages([]);
+    setMessage("");
+    setMobileMenu(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const chooseSuggestion = (text) => {
+    setMessage(text);
+    setMobileMenu(false);
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
   const send = async (event) => {
     event?.preventDefault();
     const query = message.trim();
     if (!query || loading) return;
-    setMessages((current) => [...current, { role: "user", text: query }]);
-    setMessage(""); setLoading(true);
+
+    setMessages((current) => [...current, { role: "user", text: query, subject }]);
+    setMessage("");
+    setLoading(true);
+
     try {
-      const response = await fetch(`${API}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: query, subject: subject || null }) });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const response = await fetch(`${API}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: query, subject: subject || null }),
+      });
+      if (!response.ok) {
+        let detail = `HTTP ${response.status}`;
+        try {
+          const error = await response.json();
+          detail = error.detail || detail;
+        } catch {}
+        throw new Error(detail);
+      }
       const data = await response.json();
-      setMessages((current) => [...current, { role: "bot", text: data.answer, sources: data.sources || [], latency: data.latency_ms, grounded: data.grounded }]);
-    } catch (error) { setMessages((current) => [...current, { role: "bot", text: `Unable to reach EduBot API: ${error.message}`, error: true }]); }
-    finally { setLoading(false); }
+      setMessages((current) => [
+        ...current,
+        {
+          role: "bot",
+          text: data.answer,
+          sources: data.sources || [],
+          latency: data.latency_ms,
+          grounded: data.grounded,
+        },
+      ]);
+      setHealth((current) => (current ? { ...current, success: true } : current));
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        { role: "bot", text: `I couldn't reach the EduBot AI service. ${error.message}`, error: true },
+      ]);
+      setHealth((current) => ({ ...(current || {}), success: false, initialization_status: "offline" }));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return <main className="app"><section className="card">
-    <header><div className="logo">🤖</div><div className="brand"><h1>EduBot</h1><p>AI-Powered Educational Chatbot · RAG Research Prototype</p></div><button className="health" onClick={checkHealth}>API Status</button></header>
-    <div className="research-bar"><span>🧠 NLP</span><span>🔎 FAISS Semantic Search</span><span>🤗 Transformer</span><span>📚 Grounded RAG</span>{health && <strong className={health.success ? "ok" : "bad"}>{health.success ? `● ${health.knowledge_records ?? 0} records` : "● Offline"}</strong>}</div>
-    <div className="messages">
-      {messages.length === 0 && <div className="welcome"><div className="welcome-icon">🎓</div><h2>Ask an academic question</h2><p>EduBot retrieves relevant academic knowledge with semantic search and uses the retrieved context to formulate a grounded answer.</p><div className="suggestions">{suggestions.map((item) => <button key={item} onClick={() => setMessage(item)}>{item}</button>)}</div></div>}
-      {messages.map((item, index) => <article key={index} className={`message ${item.role} ${item.error ? "error" : ""}`}><div>{item.text}</div>{item.role === "bot" && item.sources?.length > 0 && <aside><b>Retrieved academic sources</b>{item.sources.map((source, i) => <small key={i}>{source.title} · {source.topic || "Academic"} · similarity {Number(source.score).toFixed(3)}</small>)}</aside>}{item.role === "bot" && !item.error && <footer>{item.grounded ? "✓ Grounded in retrieved knowledge" : "⚠ No sufficiently relevant context"}{Number.isFinite(item.latency) && ` · ${item.latency} ms`}</footer>}</article>)}
-      {loading && <article className="message bot typing">Retrieving academic knowledge and preparing a grounded response…</article>}
+  const statusText = useMemo(() => {
+    if (!health) return "Checking AI service…";
+    if (!health.success) return "API offline";
+    if (health.initialization_status !== "ready") return "AI starting…";
+    return `${health.knowledge_records ?? 0} knowledge records`;
+  }, [health]);
+
+  return (
+    <div className="app-shell">
+      <aside className={`sidebar ${mobileMenu ? "open" : ""}`}>
+        <div className="sidebar-top">
+          <div className="brand-row">
+            <div className="brand-mark">🤖</div>
+            <div>
+              <div className="brand-name">Edu<span>Bot</span></div>
+              <div className="brand-subtitle">AI Learning Assistant</div>
+            </div>
+          </div>
+
+          <button className="new-chat" onClick={newChat}>
+            <span>＋</span> New conversation
+          </button>
+
+          <div className="sidebar-label">Subjects</div>
+          <div className="subject-list">
+            <button className={`subject-item ${!subject ? "active" : ""}`} onClick={() => setSubject("")}>
+              <span>✦</span><span>All subjects</span>
+            </button>
+            {subjects.map((item) => (
+              <button key={item} className={`subject-item ${subject === item ? "active" : ""}`} onClick={() => setSubject(item)}>
+                <span className="subject-dot">•</span><span>{item}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="sidebar-bottom">
+          <div className="research-card">
+            <div className="research-icon">⌁</div>
+            <div>
+              <strong>Research prototype</strong>
+              <span>FastAPI · FAISS · RAG</span>
+            </div>
+          </div>
+          <div className="sidebar-footer">Built for academic learning</div>
+        </div>
+      </aside>
+
+      {mobileMenu && <button className="backdrop" aria-label="Close menu" onClick={() => setMobileMenu(false)} />}
+
+      <main className="chat-main">
+        <header className="chat-header">
+          <div className="header-left">
+            <button className="menu-button" onClick={() => setMobileMenu(true)} aria-label="Open menu">☰</button>
+            <div>
+              <div className="chat-title-row">
+                <h1>EduBot</h1>
+                <span className={`status-pill ${isOnline ? "online" : ""}`}><i />{isOnline ? "Online" : "Connecting"}</span>
+              </div>
+              <p>AI-powered educational assistant · <strong>{activeSubjectLabel}</strong></p>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button className="icon-button" onClick={checkHealth} title="Check API status">↻</button>
+            <button className="status-button" onClick={checkHealth}>
+              <span className={`status-dot ${isOnline ? "online" : ""}`} /> API Status
+            </button>
+          </div>
+        </header>
+
+        <section className="chat-messages" ref={messagesRef}>
+          {messages.length === 0 && (
+            <div className="welcome">
+              <div className="welcome-glow"><div className="welcome-robot">🤖</div></div>
+              <span className="eyebrow">YOUR ACADEMIC AI ASSISTANT</span>
+              <h2>Learn smarter with <span>EduBot</span></h2>
+              <p>Ask questions from your syllabus and get clear answers backed by retrieved academic knowledge.</p>
+              <div className="feature-row">
+                <span>✓ Semantic retrieval</span><span>✓ Grounded answers</span><span>✓ Source visibility</span>
+              </div>
+              <div className="suggestions">
+                {suggestions.map((item) => (
+                  <button key={item.text} onClick={() => chooseSuggestion(item.text)}>
+                    <span className="suggestion-icon">{item.icon}</span>
+                    <span><small>{item.title}</small><strong>{item.text}</strong></span>
+                    <b>→</b>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((item, index) => (
+            <article key={index} className={`message-row ${item.role}`}>
+              {item.role === "bot" && <div className="bot-avatar">🤖</div>}
+              <div className="message-content">
+                <div className={`message-bubble ${item.error ? "error" : ""}`}>{item.text}</div>
+                {item.role === "bot" && !item.error && item.sources?.length > 0 && (
+                  <div className="answer-panel">
+                    <button className="sources-toggle" onClick={() => setShowSources((value) => !value)}>
+                      <span>▣</span><strong>{item.sources.length} retrieved source{item.sources.length > 1 ? "s" : ""}</strong><span>{showSources ? "⌃" : "⌄"}</span>
+                    </button>
+                    {showSources && <div className="sources-list">{item.sources.map((source, i) => (
+                      <div className="source-item" key={i}>
+                        <div><strong>{source.title}</strong><small>{source.topic || "Academic knowledge"}</small></div>
+                        <span>{Number(source.score).toFixed(3)}</span>
+                      </div>
+                    ))}</div>}
+                    <div className="answer-meta">
+                      <span className={item.grounded ? "grounded" : "not-grounded"}>{item.grounded ? "✓ Grounded in retrieved knowledge" : "⚠ No sufficiently relevant context"}</span>
+                      {Number.isFinite(item.latency) && <span>{item.latency} ms</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </article>
+          ))}
+
+          {loading && (
+            <article className="message-row bot">
+              <div className="bot-avatar">🤖</div>
+              <div className="message-content"><div className="typing-card"><div className="typing-dots"><i/><i/><i/></div><span>Searching academic knowledge…</span></div></div>
+            </article>
+          )}
+        </section>
+
+        <div className="composer-wrap">
+          <div className="composer-tools">
+            <span><span className={`live-dot ${isOnline ? "" : "idle"}`} /> {statusText}</span>
+            <button onClick={() => setSubject("")}>Clear subject</button>
+          </div>
+          <form className="composer" onSubmit={send}>
+            <textarea ref={inputRef} value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(event); } }} placeholder="Ask an academic question…" maxLength={4000} rows={1} />
+            <button className="send-button" type="submit" disabled={loading || !message.trim()} aria-label="Send message">➤</button>
+          </form>
+          <div className="composer-note">EduBot uses retrieved academic material to keep answers relevant and grounded.</div>
+        </div>
+      </main>
     </div>
-    <div className="pipeline"><span>Student Query</span><b>→</b><span>Embedding</span><b>→</b><span>FAISS</span><b>→</b><span>Context</span><b>→</b><span>Transformer</span></div>
-    <form onSubmit={send}><input value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Ask a syllabus-related question…" maxLength={4000} /><input className="subject" value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Subject (optional)" maxLength={200} /><button type="submit" disabled={loading}>{loading ? "…" : "Send"}</button></form>
-  </section></main>;
+  );
 }
+
 createRoot(document.getElementById("root")).render(<App />);
