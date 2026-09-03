@@ -21,7 +21,7 @@ def env_value(name: str, default: str) -> str:
 
 
 MONGO_URI = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
-DB_NAME = env_value("MONGODB_DB", "edubot")
+CONFIGURED_DB_NAME = env_value("MONGODB_DB", "")
 KNOWLEDGE_COLLECTION = env_value("MONGODB_KNOWLEDGE_COLLECTION", "knowledges")
 SUBJECT_COLLECTION = env_value("MONGODB_SUBJECT_COLLECTION", "subjects")
 EMBEDDING_MODEL = env_value("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
@@ -40,6 +40,7 @@ initialization_task = None
 initialization_status = "starting"
 initialization_error = None
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=8000) if MONGO_URI else None
+DB_NAME = CONFIGURED_DB_NAME or "edubot"
 
 
 class ChatRequest(BaseModel):
@@ -75,6 +76,46 @@ def knowledge_text(item):
         if value:
             values.append(str(value))
     return " ".join(values).strip()
+
+
+def choose_database():
+    global DB_NAME
+    if client is None:
+        return
+
+    candidates = []
+    if CONFIGURED_DB_NAME:
+        candidates.append(CONFIGURED_DB_NAME)
+
+    try:
+        default_db = client.get_default_database()
+        if default_db is not None and default_db.name not in candidates:
+            candidates.append(default_db.name)
+    except Exception:
+        pass
+
+    # If the configured/default DB is empty, look for the DB that actually
+    # contains EduBot's existing subjects and knowledge collections.
+    try:
+        for name in client.list_database_names():
+            if name not in candidates and name not in {"admin", "local", "config"}:
+                candidates.append(name)
+    except Exception as exc:
+        print(f"MongoDB database discovery skipped: {exc}")
+
+    for name in candidates:
+        try:
+            collections = set(client[name].list_collection_names())
+            if SUBJECT_COLLECTION in collections or KNOWLEDGE_COLLECTION in collections:
+                DB_NAME = name
+                print(f"Using MongoDB database: {DB_NAME}")
+                return
+        except Exception as exc:
+            print(f"Could not inspect database '{name}': {exc}")
+
+    if candidates:
+        DB_NAME = candidates[0]
+        print(f"No EduBot collections found; using configured database: {DB_NAME}")
 
 
 def load_subjects():
@@ -214,6 +255,7 @@ async def initialize_backend():
         if client is not None:
             initialization_status = "loading_knowledge"
             await asyncio.to_thread(client.admin.command, "ping")
+            await asyncio.to_thread(choose_database)
             await asyncio.to_thread(load_subjects)
             await asyncio.to_thread(load_knowledge)
             print(
@@ -234,8 +276,6 @@ async def initialize_backend():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global initialization_task
-    # Do not block Uvicorn startup while downloading/loading ML models or
-    # generating the FAISS index. Render can bind the port immediately.
     initialization_task = asyncio.create_task(initialize_backend())
     yield
     if initialization_task and not initialization_task.done():
@@ -284,6 +324,7 @@ def health():
         "success": True,
         "service": "EduBot Research API",
         "database": database,
+        "database_name": DB_NAME,
         "vector_store": "FAISS",
         "embedding_model": EMBEDDING_MODEL,
         "generation_model": GENERATION_MODEL if ENABLE_LOCAL_GENERATION else "disabled (memory-safe RAG)",
@@ -323,6 +364,7 @@ def reload_knowledge():
     if embedding_model is None:
         raise HTTPException(status_code=503, detail="Embedding model is not ready")
     try:
+        choose_database()
         load_subjects()
         load_knowledge()
         return {
