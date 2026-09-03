@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: edubot-research-frontend
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_API_URL
+        value: https://edu-chatbot-1-2m2i.onrender.com
