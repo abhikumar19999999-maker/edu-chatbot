@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: edubot-research-api
+    runtime: python
+    rootDir: research_backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: edubot
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: GENERATION_MODEL
+        value: google/flan-t5-small
+      - key: TOP_K
+        value: "5"
+      - key: MIN_RETRIEVAL_SCORE
+        value: "0.25"
